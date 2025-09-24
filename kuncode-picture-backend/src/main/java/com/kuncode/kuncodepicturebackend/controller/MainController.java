@@ -14,7 +14,7 @@ public class MainController {
 
     @GetMapping
     public BaseResponse<String> Health() {
-        return ResultUtils.success("Health");
+        return ResultUtils.success("test");
     }
 
 }
