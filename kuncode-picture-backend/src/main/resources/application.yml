@@ -11,7 +11,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/kuncode_picture
     username: root
-    password: 234182
+    password: 123
 
 mybatis-plus:
   configuration:
