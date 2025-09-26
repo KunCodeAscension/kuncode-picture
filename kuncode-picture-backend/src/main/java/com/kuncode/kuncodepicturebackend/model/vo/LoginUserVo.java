@@ -1,40 +1,37 @@
-package com.kuncode.kuncodepicturebackend.model.entity;
+package com.kuncode.kuncodepicturebackend.model.vo;
 
-import com.baomidou.mybatisplus.annotation.*;
-
-import java.time.LocalDateTime;
-import java.io.Serializable;
-import io.swagger.annotations.ApiModel;
+import cn.hutool.core.bean.BeanUtil;
+import com.kuncode.kuncodepicturebackend.model.entity.User;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.*;
-import lombok.experimental.Accessors;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.time.LocalDateTime;
 
 /**
  * <p>
- * 用户
+ * 用户登录脱敏数据
  * </p>
  *
  * @author wyt
  * @since 2025-09-25
  */
 @Data
-@TableName("user")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class User implements Serializable {
+public class LoginUserVo implements Serializable {
 
-    private static final long serialVersionUID = 6469115171346742891L;
+    private static final long serialVersionUID = 103928114541947090L;
 
     @ApiModelProperty(value = "id")
-    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     @ApiModelProperty(value = "账号")
     private String userAccount;
-
-    @ApiModelProperty(value = "密码")
-    private String userPassword;
 
     @ApiModelProperty(value = "用户昵称")
     private String userName;
@@ -57,9 +54,10 @@ public class User implements Serializable {
     @ApiModelProperty(value = "更新时间")
     private LocalDateTime updateTime;
 
-    @ApiModelProperty(value = "是否删除")
-    @TableLogic
-    private Integer isDelete;
-
-
+    public static LoginUserVo toLoginUserVo(User user) {
+        if (user == null) {
+            return null;
+        }
+        return BeanUtil.copyProperties(user, LoginUserVo.class);
+    }
 }
