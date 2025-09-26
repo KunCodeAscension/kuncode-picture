@@ -16,7 +16,7 @@ spring:
 mybatis-plus:
   configuration:
     # 驼峰配置
-    map-underscore-to-camel-case: true
+    map-underscore-to-camel-case: false
     # 开发环境打印 Sql 日志
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
