@@ -66,7 +66,7 @@ export async function getUserVoByIdUsingGet(
   })
 }
 
-/** listUserVOByPage POST /api/user/list/page/vo */
+/** listUserVOByPage POST /api/user/list/pages/vo */
 export async function listUserVoByPageUsingPost(
   body: API.UserQueryRequest,
   options?: { [key: string]: any }

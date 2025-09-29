@@ -28,6 +28,8 @@ public class UserVO implements Serializable {
 
     private Date createTime;
 
+    private Date updateTime;
+
     public static UserVO toUserVO(User user) {
         if (user == null) {
             return null;
