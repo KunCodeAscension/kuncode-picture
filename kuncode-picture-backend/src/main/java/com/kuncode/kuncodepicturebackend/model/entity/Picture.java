@@ -3,6 +3,8 @@ package com.kuncode.kuncodepicturebackend.model.entity;
 import com.baomidou.mybatisplus.annotation.*;
 import java.io.Serializable;
 import java.util.Date;
+
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -12,121 +14,55 @@ import lombok.Data;
 @TableName(value ="picture")
 @Data
 public class Picture implements Serializable {
-    /**
-     * id
-     */
+
+    @ApiModelProperty(value = "id")
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
-    /**
-     * 图片 url
-     */
+    @ApiModelProperty(value = "图片访问路径")
     private String url;
 
-    /**
-     * 缩略图 url
-     */
-    private String thumbnailUrl;
-
-    /**
-     * 图片名称
-     */
+    @ApiModelProperty(value = "图片名")
     private String name;
 
-    /**
-     * 简介
-     */
+    @ApiModelProperty(value = "图片简介")
     private String introduction;
 
-    /**
-     * 分类
-     */
+    @ApiModelProperty(value = "图片主题")
     private String category;
 
-    /**
-     * 标签（JSON 数组）
-     */
+    @ApiModelProperty(value = "图片标签")
     private String tags;
 
-    /**
-     * 图片体积
-     */
+    @ApiModelProperty(value = "图片尺寸")
     private Long picSize;
 
-    /**
-     * 图片宽度
-     */
+    @ApiModelProperty(value = "图片宽度")
     private Integer picWidth;
 
-    /**
-     * 图片高度
-     */
+    @ApiModelProperty(value = "图片高度")
     private Integer picHeight;
 
-    /**
-     * 图片宽高比例
-     */
+    @ApiModelProperty(value = "图片宽高比")
     private Double picScale;
 
-    /**
-     * 图片格式
-     */
+    @ApiModelProperty(value = "图片格式")
     private String picFormat;
 
-    /**
-     * 图片主色调
-     */
-    private String picColor;
-
-    /**
-     * 创建用户 id
-     */
+    @ApiModelProperty(value = "用户Id")
     private Long userId;
 
-    /**
-     * 空间 id
-     */
-    private Long spaceId;
-
-    /**
-     * 审核状态：0-待审核; 1-通过; 2-拒绝
-     */
-    private Integer reviewStatus;
-
-    /**
-     * 审核信息
-     */
-    private String reviewMessage;
-
-    /**
-     * 审核人 ID
-     */
-    private Long reviewerId;
-
-    /**
-     * 审核时间
-     */
-    private Date reviewTime;
-
-    /**
-     * 创建时间
-     */
+    @ApiModelProperty(value = "创建时间")
     private Date createTime;
 
-    /**
-     * 编辑时间
-     */
+    @ApiModelProperty(value = "编辑时间")
     private Date editTime;
 
-    /**
-     * 更新时间
-     */
+    @ApiModelProperty(value = "更新时间")
     private Date updateTime;
 
-    /**
-     * 是否删除
-     */
     @TableLogic
+    @ApiModelProperty(value = "是否删除")
     private Integer isDelete;
 
     @TableField(exist = false)
