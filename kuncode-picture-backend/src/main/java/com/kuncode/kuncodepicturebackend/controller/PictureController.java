@@ -16,6 +16,7 @@ import com.kuncode.kuncodepicturebackend.model.dto.picture.PictureUpdateRequest;
 import com.kuncode.kuncodepicturebackend.model.dto.picture.PictureUploadRequest;
 import com.kuncode.kuncodepicturebackend.model.entity.Picture;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
+import com.kuncode.kuncodepicturebackend.model.vo.PictureTagCategory;
 import com.kuncode.kuncodepicturebackend.model.vo.PictureVO;
 import com.kuncode.kuncodepicturebackend.service.IPictureService;
 import com.kuncode.kuncodepicturebackend.service.IUserService;
@@ -25,7 +26,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 @RestController
 @RequestMapping("/picture")
@@ -211,5 +214,14 @@ public class PictureController {
         return ResultUtils.success(true);
     }
 
+    @GetMapping("/tag_category")
+    public BaseResponse<PictureTagCategory> listPictureTagCategory() {
+        PictureTagCategory pictureTagCategory = new PictureTagCategory();
+        List<String> tagList = Arrays.asList("热门", "搞笑", "生活", "高清", "艺术", "校园", "背景", "简历", "创意");
+        List<String> categoryList = Arrays.asList("模板", "电商", "表情包", "素材", "海报");
+        pictureTagCategory.setTagList(tagList);
+        pictureTagCategory.setCategoryList(categoryList);
+        return ResultUtils.success(pictureTagCategory);
+    }
 
 }
