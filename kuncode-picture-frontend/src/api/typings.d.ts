@@ -17,9 +17,39 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponsePagePicture_ = {
+    code?: number
+    data?: PagePicture_
+    message?: string
+  }
+
+  type BaseResponsePagePictureVO_ = {
+    code?: number
+    data?: PagePictureVO_
+    message?: string
+  }
+
   type BaseResponsePageUserVO_ = {
     code?: number
     data?: PageUserVO_
+    message?: string
+  }
+
+  type BaseResponsePicture_ = {
+    code?: number
+    data?: Picture
+    message?: string
+  }
+
+  type BaseResponsePictureTagCategory_ = {
+    code?: number
+    data?: PictureTagCategory
+    message?: string
+  }
+
+  type BaseResponsePictureVO_ = {
+    code?: number
+    data?: PictureVO
     message?: string
   }
 
@@ -36,6 +66,16 @@ declare namespace API {
   }
 
   type DeleteRequest = {
+    id?: number
+  }
+
+  type getPictureByIdUsingGETParams = {
+    /** id */
+    id?: number
+  }
+
+  type getPictureVOByIdUsingGETParams = {
+    /** id */
     id?: number
   }
 
@@ -70,12 +110,137 @@ declare namespace API {
     userRole?: string
   }
 
+  type PagePicture_ = {
+    current?: number
+    pages?: number
+    records?: Picture[]
+    size?: number
+    total?: number
+  }
+
+  type PagePictureVO_ = {
+    current?: number
+    pages?: number
+    records?: PictureVO[]
+    size?: number
+    total?: number
+  }
+
   type PageUserVO_ = {
     current?: number
     pages?: number
     records?: UserVO[]
     size?: number
     total?: number
+  }
+
+  type Picture = {
+    /** 图片主题 */
+    category?: string
+    /** 创建时间 */
+    createTime?: string
+    /** 编辑时间 */
+    editTime?: string
+    /** id */
+    id?: number
+    /** 图片简介 */
+    introduction?: string
+    /** 是否删除 */
+    isDelete?: number
+    /** 图片名 */
+    name?: string
+    /** 图片格式 */
+    picFormat?: string
+    /** 图片高度 */
+    picHeight?: number
+    /** 图片宽高比 */
+    picScale?: number
+    /** 图片尺寸 */
+    picSize?: number
+    /** 图片宽度 */
+    picWidth?: number
+    /** 图片标签 */
+    tags?: string
+    /** 更新时间 */
+    updateTime?: string
+    /** 图片访问路径 */
+    url?: string
+    /** 用户Id */
+    userId?: number
+  }
+
+  type PictureEditRequest = {
+    category?: string
+    id?: number
+    introduction?: string
+    name?: string
+    tags?: string[]
+  }
+
+  type PictureQueryRequest = {
+    category?: string
+    endEditTime?: string
+    id?: number
+    introduction?: string
+    name?: string
+    nullSpaceId?: boolean
+    page?: number
+    pageSize?: number
+    picFormat?: string
+    picHeight?: number
+    picScale?: number
+    picSize?: number
+    picWidth?: number
+    reviewMessage?: string
+    reviewStatus?: number
+    reviewTime?: string
+    reviewerId?: number
+    searchText?: string
+    sortField?: string
+    sortOrder?: string
+    spaceId?: number
+    startEditTime?: string
+    tags?: string[]
+    userId?: number
+  }
+
+  type PictureTagCategory = {
+    categoryList?: string[]
+    tagList?: string[]
+  }
+
+  type PictureUpdateRequest = {
+    category?: string
+    id?: number
+    introduction?: string
+    name?: string
+    tags?: string[]
+  }
+
+  type PictureVO = {
+    category?: string
+    createTime?: string
+    editTime?: string
+    id?: number
+    introduction?: string
+    name?: string
+    picFormat?: string
+    picHeight?: number
+    picScale?: number
+    picSize?: number
+    picWidth?: number
+    tags?: string[]
+    updateTime?: string
+    url?: string
+    user?: UserVO
+    userId?: number
+  }
+
+  type uploadPictureUsingPOSTParams = {
+    fileUrl?: string
+    id?: number
+    picName?: string
+    spaceId?: number
   }
 
   type User = {
@@ -145,6 +310,7 @@ declare namespace API {
   type UserVO = {
     createTime?: string
     id?: number
+    updateTime?: string
     userAccount?: string
     userAvatar?: string
     userName?: string
