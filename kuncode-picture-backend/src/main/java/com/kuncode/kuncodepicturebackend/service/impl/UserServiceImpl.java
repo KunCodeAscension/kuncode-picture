@@ -107,4 +107,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return Boolean.TRUE;
     }
+
+    @Override
+    public boolean isAdmin(User user) {
+        return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
+    }
+
 }

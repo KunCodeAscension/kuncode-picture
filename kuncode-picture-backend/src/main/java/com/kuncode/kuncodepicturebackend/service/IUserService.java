@@ -55,4 +55,11 @@ public interface IUserService extends IService<User> {
      */
     Boolean userLogout(HttpServletRequest request);
 
+    /**
+     * 是否是管理员
+     * @param user 用户信息
+     * @return 返回是否是
+     */
+    boolean isAdmin(User user);
+
 }
