@@ -128,7 +128,7 @@ const doDelete = async (id: string) => {
 
     fetchData()
   } else {
-    message.error('删除失败')
+    message.error('删除失败，' + res.data.message)
   }
 }
 

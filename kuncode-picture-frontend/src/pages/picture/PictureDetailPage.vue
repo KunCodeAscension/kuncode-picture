@@ -47,24 +47,10 @@
               {{ formatSize(picture.picSize) }}
             </a-descriptions-item>
           </a-descriptions>
-          <a-button type="primary" @click="doDownload">
-            免费下载
-            <template #icon>
-              <DownloadOutlined />
-            </template>
-          </a-button>
           <a-space wrap>
-            <a-button :icon="h(EditOutlined)" v-if="canEdit" type="primary" @click="doEdit"
-              >编辑</a-button
-            >
-            <a-button
-              :icon="h(DeleteOutlined)"
-              v-if="canEdit"
-              type="primary"
-              danger
-              @click="doDelete"
-              >删除</a-button
-            >
+            <a-button type="primary" @click="doDownload">免费下载<template #icon><DownloadOutlined /></template></a-button>
+            <a-button :icon="h(EditOutlined)" v-if="canEdit" type="primary" @click="doEdit">编辑</a-button>
+            <a-button :icon="h(DeleteOutlined)" v-if="canEdit" type="primary" danger @click="doDelete">删除</a-button>
           </a-space>
         </a-card>
       </a-col>

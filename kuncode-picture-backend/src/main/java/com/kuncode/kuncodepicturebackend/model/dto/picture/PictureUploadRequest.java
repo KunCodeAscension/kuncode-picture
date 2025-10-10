@@ -1,7 +1,6 @@
 package com.kuncode.kuncodepicturebackend.model.dto.picture;
 
 import lombok.Data;
-
 import java.io.Serializable;
 
 /**
@@ -23,14 +22,24 @@ public class PictureUploadRequest implements Serializable {
     private String fileUrl;
 
     /**
-     * 图片名称
+     * 图片名称参数
      */
-    private String picName;
+    private String fileName;
 
     /**
-     * 空间 id
+     * 简介
      */
-    private Long spaceId;
+    private String introduction;
+
+    /**
+     * 分类
+     */
+    private String category;
+
+    /**
+     * 标签
+     */
+    private String tags;
 
     private static final long serialVersionUID = 1L;
 }

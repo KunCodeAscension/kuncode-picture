@@ -3,6 +3,7 @@ package com.kuncode.kuncodepicturebackend.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.kuncode.kuncodepicturebackend.model.dto.file.UploadPictureResult;
 import com.kuncode.kuncodepicturebackend.model.dto.picture.*;
 import com.kuncode.kuncodepicturebackend.model.entity.Picture;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
@@ -21,12 +22,12 @@ public interface IPictureService extends IService<Picture> {
 
     /**
      * 上传图片
-     * @param multipartFile 图片文件
+     * @param inputObject 图片文件 or url
      * @param pictureUploadRequest 上传图片的信息
      * @param loginUser 登录的用户
      * @return 返回图片脱敏信息
      */
-    PictureVO uploadPicture(MultipartFile multipartFile, PictureUploadRequest pictureUploadRequest, User loginUser);
+    PictureVO uploadPicture(Object inputObject, PictureUploadRequest pictureUploadRequest, User loginUser);
 
     /**
      * 获取图片包装类（单条）
@@ -43,4 +44,27 @@ public interface IPictureService extends IService<Picture> {
      * @return 返回分页图片脱敏信息
      */
     Page<PictureVO> getPictureVOPage(Page<Picture> picturePage, HttpServletRequest request);
+
+    /**
+     * 图片审核接口
+     * @param pictureReviewRequest 图片审核信息
+     * @param loginUser 登录的用户
+     */
+    void doPictureReview(PictureReviewRequest pictureReviewRequest, User loginUser);
+
+    /**
+     * 填充审核参数
+     * @param picture 图片类
+     * @param user 登录用户
+     */
+    void fillReviewParams(Picture picture,User user);
+
+    /**
+     * 批量创建图片
+     * @param pictureUploadByBatchRequest 批量创建的图片信息
+     * @param loginUser 登录的管理员
+     * @return 成功创建的图片数量
+     */
+    Integer uploadPictureByBatch(PictureUploadByBatchRequest pictureUploadByBatchRequest,User loginUser);
+
 }

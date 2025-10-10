@@ -30,6 +30,8 @@ public class UserController {
 
     final IUserService userService;
 
+    final Long SUPER_ADMIN_ID = 1971464186297221121L;
+
     /**
      * 用户注册
      *
@@ -130,9 +132,17 @@ public class UserController {
      */
     @PostMapping("/delete")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest) {
+    public BaseResponse<Boolean> deleteUser(@RequestBody DeleteRequest deleteRequest,HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        User user = userService.getLoginUser(request);
+        Long userId = deleteRequest.getId();
+        if(user.getId().equals(userId)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"禁止删除自己");
+        }
+        if(userId.equals(SUPER_ADMIN_ID)){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"禁止删除超级管理员");
         }
         boolean b = userService.removeById(deleteRequest.getId());
         return ResultUtils.success(b);

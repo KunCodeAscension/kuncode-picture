@@ -3,7 +3,16 @@
     <h2>
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>
-    <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+    <!-- 选择上传方式 -->
+    <a-tabs v-model:activeKey="uploadType"
+    >>
+      <a-tab-pane key="file" tab="文件上传">
+        <PictureUpload :picture="picture" :onSuccess="onSuccess" />
+      </a-tab-pane>
+      <a-tab-pane key="url" tab="URL 上传" force-render>
+        <UrlPictureUpload :picture="picture" :onSuccess="onSuccess" />
+      </a-tab-pane>
+    </a-tabs>
     <a-form v-if="picture" layout="vertical" :model="pictureForm" @finish="handleSubmit">
       <a-form-item label="名称" name="name">
         <a-input v-model:value="pictureForm.name" placeholder="请输入名称" />
@@ -44,6 +53,7 @@
 
 <script setup lang="ts">
 import PictureUpload from '@/components/PictureUpload.vue'
+import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
 import { onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -58,6 +68,7 @@ const onSuccess = (newPicture: API.PictureVO) => {
   picture.value = newPicture
   pictureForm.name = newPicture.name
 }
+const uploadType = ref<'file' | 'url'>('file')
 
 const categoryOptions = ref<string[]>([])
 const tagOptions = ref<string[]>([])
@@ -80,8 +91,8 @@ const handleSubmit = async (values: any) => {
       path: `/picture/${pictureId}`,
     })
   } else {
-    if (route.query?.id) message.error("修改失败" + res.data.message)
-    else message.success("创建失败" + res.data.message)
+    if (route.query?.id) message.error("修改失败，" + res.data.message)
+    else message.success("创建失败，" + res.data.message)
   }
 }
 

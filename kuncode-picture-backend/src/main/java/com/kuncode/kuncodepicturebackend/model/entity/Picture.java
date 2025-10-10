@@ -61,6 +61,18 @@ public class Picture implements Serializable {
     @ApiModelProperty(value = "更新时间")
     private Date updateTime;
 
+    @ApiModelProperty(value = "审核状态")
+    private Integer reviewStatus;
+
+    @ApiModelProperty(value = "审核信息")
+    private String reviewMessage;
+
+    @ApiModelProperty(value = "审核通过人Id")
+    private Long reviewerId;
+
+    @ApiModelProperty(value = "审核时间")
+    private Date reviewTime;
+
     @TableLogic
     @ApiModelProperty(value = "是否删除")
     private Integer isDelete;
