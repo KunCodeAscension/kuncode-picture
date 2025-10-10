@@ -1,4 +1,5 @@
 /kuncode-picture-backend/target
+/kuncode-picture-backend/src/main/resources/application.yml
 /kuncode-picture-frontend/node_modules
 /kuncode-picture-frontend/.vscode
 .idea
