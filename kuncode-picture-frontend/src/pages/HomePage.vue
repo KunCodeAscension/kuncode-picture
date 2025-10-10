@@ -40,7 +40,7 @@
             <template #cover>
               <img
                 :alt="picture.name"
-                :src="picture.url"
+                :src="picture.thumbnailUrl"
                 style="height: 180px; object-fit: cover"
               />
             </template>

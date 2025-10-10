@@ -52,6 +52,9 @@ public class Picture implements Serializable {
     @ApiModelProperty(value = "用户Id")
     private Long userId;
 
+    @ApiModelProperty(value = "缩略图")
+    private String thumbnailUrl;
+
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 

@@ -2,6 +2,7 @@ package com.kuncode.kuncodepicturebackend.model.vo;
 
 import cn.hutool.json.JSONUtil;
 import com.kuncode.kuncodepicturebackend.model.entity.Picture;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
@@ -43,6 +44,9 @@ public class PictureVO implements Serializable {
     private Double picScale;
 
 
+    private String thumbnailUrl;
+
+    
     private String picFormat;
 
 

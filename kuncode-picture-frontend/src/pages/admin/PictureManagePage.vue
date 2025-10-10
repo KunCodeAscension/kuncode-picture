@@ -48,7 +48,7 @@
           <a-tag color="orange">{{ record.PictureName }}</a-tag>
         </template>
         <template v-else-if="column.dataIndex === 'url'">
-          <a-image :src="record.url" :width="60" />
+          <a-image :src="record.thumbnailUrl" :width="60" />
         </template>
         <template v-else-if="column.dataIndex === 'tags'">
           <a-space wrap>

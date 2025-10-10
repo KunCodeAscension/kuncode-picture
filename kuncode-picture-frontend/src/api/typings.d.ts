@@ -175,6 +175,8 @@ declare namespace API {
     reviewerId?: number
     /** 图片标签 */
     tags?: string
+    /** 缩略图 */
+    thumbnailUrl?: string
     /** 更新时间 */
     updateTime?: string
     /** 图片访问路径 */
@@ -268,6 +270,7 @@ declare namespace API {
     picSize?: number
     picWidth?: number
     tags?: string[]
+    thumbnailUrl?: string
     updateTime?: string
     url?: string
     user?: UserVO

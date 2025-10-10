@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.kuncode.kuncodepicturebackend.exception.BusinessException;
 import com.kuncode.kuncodepicturebackend.exception.ErrorCode;
 import com.kuncode.kuncodepicturebackend.exception.ThrowUtils;
+import com.kuncode.kuncodepicturebackend.manager.CosManager;
 import com.kuncode.kuncodepicturebackend.manager.upload.FilePictureUpload;
 import com.kuncode.kuncodepicturebackend.manager.upload.UrlPictureUpload;
 import com.kuncode.kuncodepicturebackend.mapper.PictureMapper;
@@ -29,6 +30,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
@@ -47,6 +49,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
     final FilePictureUpload filePictureUpload;
 
     final UrlPictureUpload  urlPictureUpload;
+
+    final CosManager cosManager;
 
     final IUserService userService;
 
@@ -117,6 +121,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         picture.setPicScale(uploadPictureResult.getPicScale());
         picture.setPicFormat(uploadPictureResult.getPicFormat());
         picture.setUserId(loginUser.getId());
+        picture.setThumbnailUrl(uploadPictureResult.getThumbnailUrl());
         if (pictureId != null) {
             picture.setId(pictureId);
             picture.setEditTime(new Date());
@@ -258,6 +263,16 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             }
         }
         return uploadCount;
+    }
+
+    @Async
+    @Override
+    public void clearPictureFile(Picture oldPicture) {
+        cosManager.deleteObject(oldPicture.getUrl());
+        String thumbnailUrl = oldPicture.getThumbnailUrl();
+        if (StrUtil.isNotBlank(thumbnailUrl)) {
+            cosManager.deleteObject(thumbnailUrl);
+        }
     }
 
 }

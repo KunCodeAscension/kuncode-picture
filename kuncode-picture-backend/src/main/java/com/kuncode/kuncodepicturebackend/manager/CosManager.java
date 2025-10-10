@@ -2,6 +2,7 @@ package com.kuncode.kuncodepicturebackend.manager;
 
 import cn.hutool.core.io.FileUtil;
 import com.qcloud.cos.COSClient;
+import com.qcloud.cos.exception.CosClientException;
 import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.GetObjectRequest;
 import com.qcloud.cos.model.PutObjectRequest;
@@ -56,7 +57,34 @@ public class CosManager {
         PutObjectRequest putObjectRequest = new PutObjectRequest(cosClientConfig.getBucket(), key, file);
         PicOperations picOperations = new PicOperations();
         picOperations.setIsPicInfo(1);
+        List<PicOperations.Rule> rules = new ArrayList<>();
+        // 图片压缩 转换为 webp
+        String webpKey = FileUtil.mainName(key) + ".webp";
+        PicOperations.Rule compressRule = new PicOperations.Rule();
+        compressRule.setRule("imageMogr2/format/webp");
+        compressRule.setBucket(cosClientConfig.getBucket());
+        compressRule.setFileId(webpKey);
+        rules.add(compressRule);
+        // 缩略图处理规则 原图大小超过20kb 才进行生成缩略图
+        if (file.length() > 2 * 1024) {
+            PicOperations.Rule thumbnailRule = new PicOperations.Rule();
+            thumbnailRule.setBucket(cosClientConfig.getBucket());
+            String thumbnailKey = FileUtil.mainName(key) + "_thumbnail." + FileUtil.getSuffix(key);
+            thumbnailRule.setFileId(thumbnailKey);
+            thumbnailRule.setRule(String.format("imageMogr2/thumbnail/%sx%s>", 256, 256));
+            rules.add(thumbnailRule);
+        }
+        picOperations.setRules(rules);
         putObjectRequest.setPicOperations(picOperations);
         return cosClient.putObject(putObjectRequest);
+    }
+
+    /**
+     * 删除图片
+     * @param key 删除图片的 key
+     * @throws CosClientException CosClientException
+     */
+    public void deleteObject(String key) throws CosClientException {
+        cosClient.deleteObject(cosClientConfig.getBucket(), key);
     }
 }
