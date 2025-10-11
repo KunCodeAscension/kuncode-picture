@@ -17,11 +17,13 @@ import com.kuncode.kuncodepicturebackend.mapper.PictureMapper;
 import com.kuncode.kuncodepicturebackend.model.dto.file.UploadPictureResult;
 import com.kuncode.kuncodepicturebackend.model.dto.picture.*;
 import com.kuncode.kuncodepicturebackend.model.entity.Picture;
+import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.kuncode.kuncodepicturebackend.model.enums.PictureReviewStatusEnum;
 import com.kuncode.kuncodepicturebackend.model.vo.PictureVO;
 import com.kuncode.kuncodepicturebackend.model.vo.UserVO;
 import com.kuncode.kuncodepicturebackend.service.IPictureService;
+import com.kuncode.kuncodepicturebackend.service.ISpaceService;
 import com.kuncode.kuncodepicturebackend.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +34,7 @@ import org.jsoup.select.Elements;
 import org.springframework.beans.BeanUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -54,6 +57,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
     final IUserService userService;
 
+    final ISpaceService spaceService;
+
+    final TransactionTemplate transactionTemplate;
+
     @Override
     public void validPicture(Picture picture) {
         ThrowUtils.throwIf(picture == null, ErrorCode.PARAMS_ERROR);
@@ -73,12 +80,22 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
     @Override
     public PictureVO uploadPicture(Object inputObject, PictureUploadRequest pictureUploadRequest, User loginUser) {
-        ThrowUtils.throwIf(loginUser == null, ErrorCode.NO_AUTH_ERROR);
-        Long pictureId = null;
-        if (pictureUploadRequest != null) {
-            pictureId = pictureUploadRequest.getId();
+        ThrowUtils.throwIf(pictureUploadRequest == null, ErrorCode.PARAMS_ERROR);
+        Long pictureId = pictureUploadRequest.getId();
+        Long spaceId = pictureUploadRequest.getSpaceId();
+        if(spaceId != null){
+            Space space = spaceService.getById(spaceId);
+            ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR,"空间不存在");
+            if(!loginUser.getId().equals(space.getUserId())){
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR,"无权访问");
+            }
+            if(space.getTotalSize() >= space.getMaxSize()){
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR,"空间大小不足");
+            }
+            if(space.getTotalCount() >= space.getMaxCount()){
+                throw new BusinessException(ErrorCode.SYSTEM_ERROR,"空间条数不足");
+            }
         }
-
         if (pictureId != null) {
             Picture oldPicture = this.getById(pictureId);
             // 图片不存在
@@ -91,27 +108,33 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             if(oldPicture.getReviewStatus().equals(PictureReviewStatusEnum.REVIEWING.getValue())){
                 throw new BusinessException(ErrorCode.PARAMS_ERROR,"图片正在审核请勿修改");
             }
+            if(spaceId == null){
+                if(oldPicture.getSpaceId() != null){
+                    spaceId = oldPicture.getSpaceId();
+                }
+            }else {
+                // 必须和之前的一致
+                if(ObjUtil.notEqual(spaceId, oldPicture.getSpaceId())){
+                    throw new BusinessException(ErrorCode.PARAMS_ERROR,"空间ID不一致");
+                }
+            }
         }
-        String uploadPathPrefix = String.format("public/%s", loginUser.getId());
-        UploadPictureResult uploadPictureResult;
-        if(inputObject instanceof MultipartFile) {
-            uploadPictureResult = filePictureUpload.uploadPicture(inputObject, uploadPathPrefix);
-        }else {
-            uploadPictureResult = urlPictureUpload.uploadPicture(inputObject, uploadPathPrefix);
-        }
+        String uploadPathPrefix = spaceId != null ? String.format("public/%s", spaceId) : String.format("space/%s", loginUser.getId());
+        UploadPictureResult uploadPictureResult = inputObject instanceof MultipartFile ? filePictureUpload.uploadPicture(inputObject, uploadPathPrefix) : urlPictureUpload.uploadPicture(inputObject, uploadPathPrefix);
         Picture picture = new Picture();
+        picture.setSpaceId(spaceId);
         picture.setUrl(uploadPictureResult.getUrl());
         String picName = uploadPictureResult.getPicName();
-        if(pictureUploadRequest != null && StrUtil.isNotBlank(pictureUploadRequest.getFileName())) {
+        if(StrUtil.isNotBlank(pictureUploadRequest.getFileName())) {
             picName = pictureUploadRequest.getFileName();
         }
-        if(pictureUploadRequest != null && StrUtil.isNotBlank(pictureUploadRequest.getIntroduction())) {
+        if(StrUtil.isNotBlank(pictureUploadRequest.getIntroduction())) {
             picture.setIntroduction(pictureUploadRequest.getIntroduction());
         }
-        if(pictureUploadRequest != null && StrUtil.isNotBlank(pictureUploadRequest.getCategory())) {
+        if(StrUtil.isNotBlank(pictureUploadRequest.getCategory())) {
             picture.setCategory(pictureUploadRequest.getCategory());
         }
-        if(pictureUploadRequest != null && StrUtil.isNotBlank(pictureUploadRequest.getTags())) {
+        if(StrUtil.isNotBlank(pictureUploadRequest.getTags())) {
             picture.setTags(pictureUploadRequest.getTags());
         }
         picture.setName(picName);
@@ -122,22 +145,48 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         picture.setPicFormat(uploadPictureResult.getPicFormat());
         picture.setUserId(loginUser.getId());
         picture.setThumbnailUrl(uploadPictureResult.getThumbnailUrl());
+        Long finalSpaceId = spaceId;
         if (pictureId != null) {
+            // 此时属于新增图片
             picture.setId(pictureId);
             picture.setEditTime(new Date());
+            // 补充审核参数
+            this.fillReviewParams(picture, loginUser);
+            transactionTemplate.execute(status -> {
+                boolean saveOrUpdate = this.saveOrUpdate(picture);
+                ThrowUtils.throwIf(!saveOrUpdate, ErrorCode.OPERATION_ERROR, "图片上传失败");
+                boolean update = spaceService.lambdaUpdate()
+                        .eq(Space::getId, finalSpaceId)
+                        .setSql("totalSize = totalSize + ", picture.getPicSize())
+                        .setSql("totalCount = totalCount + 1")
+                        .update();
+                ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "空间更新失败");
+                return picture;
+            });
+            return PictureVO.objToVo(picture);
         }
+        // 此时属于修改图片
         // 补充审核参数
         this.fillReviewParams(picture, loginUser);
-        boolean result = this.saveOrUpdate(picture);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "图片上传失败");
+        transactionTemplate.execute(status -> {
+            Picture oldPicture = this.getById(pictureId);
+            boolean saveOrUpdate = this.saveOrUpdate(picture);
+            ThrowUtils.throwIf(!saveOrUpdate, ErrorCode.OPERATION_ERROR, "图片上传失败");
+            boolean update = spaceService.lambdaUpdate()
+                    .eq(Space::getId, finalSpaceId)
+                    .setSql("totalSize = totalSize + ", picture.getPicSize()," - ",oldPicture.getPicSize())
+                    .update();
+            ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "额度更新失败");
+            // 清理资源
+            this.clearPictureFile(oldPicture);
+            return picture;
+        });
         return PictureVO.objToVo(picture);
     }
 
     @Override
     public PictureVO getPictureVO(Picture picture, HttpServletRequest request) {
-
         PictureVO pictureVO = PictureVO.objToVo(picture);
-
         Long userId = picture.getUserId();
         if (userId != null && userId > 0) {
             User user = userService.getById(userId);
@@ -274,6 +323,22 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             cosManager.deleteObject(thumbnailUrl);
         }
     }
+
+    @Override
+    public void checkPictureAuth(User loginUser, Picture picture) {
+        Long spaceId = picture.getSpaceId();
+        if (spaceId == null) {
+            if (!picture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            }
+        } else {
+
+            if (!picture.getUserId().equals(loginUser.getId())) {
+                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            }
+        }
+    }
+
 
 }
 

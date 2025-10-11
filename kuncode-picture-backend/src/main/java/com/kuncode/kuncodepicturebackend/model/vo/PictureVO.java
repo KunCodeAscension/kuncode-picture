@@ -62,6 +62,9 @@ public class PictureVO implements Serializable {
     private Date updateTime;
 
 
+    private Long spaceId;
+
+
     private UserVO user;
 
     private static final long serialVersionUID = 1L;

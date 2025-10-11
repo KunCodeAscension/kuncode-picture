@@ -119,6 +119,7 @@ public class PictureQueryRequest extends PageRequest implements Serializable {
      */
     private Date endEditTime;
 
+
     private static final long serialVersionUID = 1L;
 
     public static QueryWrapper<Picture> getQueryWrapper(PictureQueryRequest pictureQueryRequest) {
@@ -144,6 +145,8 @@ public class PictureQueryRequest extends PageRequest implements Serializable {
         Integer reviewStatus = pictureQueryRequest.getReviewStatus();
         String reviewMessage = pictureQueryRequest.getReviewMessage();
         Long reviewerId = pictureQueryRequest.getReviewerId();
+        Long spaceId = pictureQueryRequest.getSpaceId();
+        boolean nullSpaceId = pictureQueryRequest.isNullSpaceId();
 
         if (StrUtil.isNotBlank(searchText)) {
 
@@ -165,6 +168,8 @@ public class PictureQueryRequest extends PageRequest implements Serializable {
         queryWrapper.eq(ObjUtil.isNotEmpty(reviewStatus), "reviewStatus", reviewStatus);
         queryWrapper.like(StrUtil.isNotBlank(reviewMessage), "reviewMessage", reviewMessage);
         queryWrapper.eq(ObjUtil.isNotEmpty(reviewerId), "reviewerId", reviewerId);
+        queryWrapper.eq(ObjUtil.isNotEmpty(spaceId), "spaceId", spaceId);
+        queryWrapper.isNull(nullSpaceId, "spaceId");
 
         if (CollUtil.isNotEmpty(tags)) {
             for (String tag : tags) {
