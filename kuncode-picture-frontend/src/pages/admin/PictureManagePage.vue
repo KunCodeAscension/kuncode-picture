@@ -33,6 +33,10 @@
         />
       </a-form-item>
       <a-form-item>
+
+        <a-checkbox v-model:checked="searchParams.nullSpaceId">不包含个人空间图片</a-checkbox>
+      </a-form-item>
+      <a-form-item>
         <a-button type="primary" html-type="submit">搜索</a-button>
       </a-form-item>
     </a-form>
@@ -158,6 +162,11 @@ const columns = [
     width: 80,
   },
   {
+    title: '空间 id',
+    dataIndex: 'spaceId',
+    width: 80,
+  },
+  {
     title: '审核信息',
     dataIndex: 'reviewMessage',
   },
@@ -185,6 +194,7 @@ const searchParams = reactive<API.PictureQueryRequest>({
   pageSize: 10,
   sortField: 'createTime',
   sortOrder: 'descend',
+  nullSpaceId: true,
 })
 
 // 分页配置

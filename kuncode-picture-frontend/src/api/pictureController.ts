@@ -92,27 +92,12 @@ export async function listPictureVoByPageUsingPost(
   })
 }
 
-/** listPictureVOByPageCaffeine POST /api/picture/list/page/vo/caffeineCache */
-export async function listPictureVoByPageCaffeineUsingPost(
+/** listPictureVOByPageCache POST /api/picture/list/page/vo/cache */
+export async function listPictureVoByPageCacheUsingPost(
   body: API.PictureQueryRequest,
   options?: { [key: string]: any }
 ) {
-  return request<API.BaseResponsePagePictureVO_>('/api/picture/list/page/vo/caffeineCache', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    data: body,
-    ...(options || {}),
-  })
-}
-
-/** listPictureVOByPageRedis POST /api/picture/list/page/vo/redisCache */
-export async function listPictureVoByPageRedisUsingPost(
-  body: API.PictureQueryRequest,
-  options?: { [key: string]: any }
-) {
-  return request<API.BaseResponsePagePictureVO_>('/api/picture/list/page/vo/redisCache', {
+  return request<API.BaseResponsePagePictureVO_>('/api/picture/list/page/vo/cache', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

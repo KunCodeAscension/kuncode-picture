@@ -28,6 +28,10 @@
             </ASpace>
             <template #overlay>
               <a-menu>
+                <a-menu-item @click="toMySpace">
+                  <UserOutlined />
+                  我的空间
+                </a-menu-item>
                 <a-menu-item @click="doLogout">
                   <LogoutOutlined />
                   退出登录
@@ -45,7 +49,7 @@
 </template>
 <script lang="ts" setup>
 import { computed, h, ref } from 'vue'
-import { HomeOutlined, LogoutOutlined } from '@ant-design/icons-vue'
+import { HomeOutlined, LogoutOutlined,UserOutlined } from '@ant-design/icons-vue'
 import { type MenuProps, message } from 'ant-design-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
@@ -71,8 +75,13 @@ const originItems = [
     key: '/admin/pictureManage',
     label: '图片管理',
     title: '图片管理',
-  }
-  ,{
+  },
+  {
+    key: '/admin/spaceManage',
+    label: '空间管理',
+    title: '空间管理',
+  },
+  {
     key: '/others',
     label: '坤码飞升',
     title: '坤码飞升',
@@ -115,6 +124,10 @@ const doLogout = async () => {
   } else {
     message.error('退出登录失败，' + res.data.message)
   }
+}
+
+const toMySpace = async () => {
+  await router.push('/my_space')
 }
 
 const loginUserStore = useLoginUserStore()

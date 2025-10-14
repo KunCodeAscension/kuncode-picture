@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.kuncode.kuncodepicturebackend.common.ResultUtils;
 import com.kuncode.kuncodepicturebackend.exception.BusinessException;
 import com.kuncode.kuncodepicturebackend.exception.ErrorCode;
 import com.kuncode.kuncodepicturebackend.exception.ThrowUtils;
@@ -146,42 +147,47 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         picture.setUserId(loginUser.getId());
         picture.setThumbnailUrl(uploadPictureResult.getThumbnailUrl());
         Long finalSpaceId = spaceId;
+        // 补充审核参数
+        this.fillReviewParams(picture, loginUser);
         if (pictureId != null) {
-            // 此时属于新增图片
             picture.setId(pictureId);
             picture.setEditTime(new Date());
-            // 补充审核参数
-            this.fillReviewParams(picture, loginUser);
+            transactionTemplate.execute(status -> {
+                Picture oldPicture = this.getById(pictureId);
+                boolean saveOrUpdate = this.saveOrUpdate(picture);
+                ThrowUtils.throwIf(!saveOrUpdate, ErrorCode.OPERATION_ERROR, "图片上传失败");
+                if(finalSpaceId != null){
+                    long sizeDiff = picture.getPicSize() - oldPicture.getPicSize();
+                    boolean update = spaceService.lambdaUpdate()
+                            .eq(Space::getId, finalSpaceId)
+                            .setSql("totalSize = totalSize + " + sizeDiff)
+                            .update();
+                    ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "额度更新失败");
+                }
+                // 清理资源
+                this.clearPictureFile(oldPicture);
+                return picture;
+            });
+            return PictureVO.objToVo(picture);
+        }else {
             transactionTemplate.execute(status -> {
                 boolean saveOrUpdate = this.saveOrUpdate(picture);
                 ThrowUtils.throwIf(!saveOrUpdate, ErrorCode.OPERATION_ERROR, "图片上传失败");
-                boolean update = spaceService.lambdaUpdate()
-                        .eq(Space::getId, finalSpaceId)
-                        .setSql("totalSize = totalSize + ", picture.getPicSize())
-                        .setSql("totalCount = totalCount + 1")
-                        .update();
-                ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "空间更新失败");
+                if(finalSpaceId != null){
+                    String sql = String.format(
+                            "totalSize = totalSize + %d, totalCount = totalCount + 1",
+                            picture.getPicSize() // 传入新图片大小
+                    );
+                    boolean update = spaceService.lambdaUpdate()
+                            .eq(Space::getId, finalSpaceId)
+                            .setSql(sql)
+                            .update();
+                    ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "空间更新失败");
+                }
                 return picture;
             });
             return PictureVO.objToVo(picture);
         }
-        // 此时属于修改图片
-        // 补充审核参数
-        this.fillReviewParams(picture, loginUser);
-        transactionTemplate.execute(status -> {
-            Picture oldPicture = this.getById(pictureId);
-            boolean saveOrUpdate = this.saveOrUpdate(picture);
-            ThrowUtils.throwIf(!saveOrUpdate, ErrorCode.OPERATION_ERROR, "图片上传失败");
-            boolean update = spaceService.lambdaUpdate()
-                    .eq(Space::getId, finalSpaceId)
-                    .setSql("totalSize = totalSize + ", picture.getPicSize()," - ",oldPicture.getPicSize())
-                    .update();
-            ThrowUtils.throwIf(!update, ErrorCode.OPERATION_ERROR, "额度更新失败");
-            // 清理资源
-            this.clearPictureFile(oldPicture);
-            return picture;
-        });
-        return PictureVO.objToVo(picture);
     }
 
     @Override
@@ -332,7 +338,6 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
                 throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
             }
         } else {
-
             if (!picture.getUserId().equals(loginUser.getId())) {
                 throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
             }

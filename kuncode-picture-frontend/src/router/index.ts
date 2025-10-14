@@ -7,6 +7,10 @@ import AddPicturePage from '@/pages/picture/AddPicturePage.vue'
 import PictureManagePage from '@/pages/admin/PictureManagePage.vue'
 import PictureDetailPage from '@/pages/picture/PictureDetailPage.vue'
 import AddPictureBatchPage from '@/pages/picture/AddPictureBatchPage.vue'
+import SpaceManagePage from '@/pages/admin/SpaceManagePage.vue'
+import AddSpacePage from '@/pages/space/AddSpacePage.vue'
+import MySpacePage from '@/pages/space/MySpacePage.vue'
+import SpaceDetilPage from '@/pages/space/SpaceDetilPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -51,6 +55,27 @@ const router = createRouter({
       path: '/add_picture/batch',
       name: '批量创建图片',
       component: AddPictureBatchPage,
+    },
+    {
+      path: '/admin/spaceManage',
+      name: '空间管理',
+      component: SpaceManagePage,
+    },
+    {
+      path: '/add_space',
+      name: '创建空间',
+      component: AddSpacePage,
+    },
+    {
+      path: '/my_space',
+      name: '我的空间',
+      component: MySpacePage,
+    },
+    {
+      path: '/space/:id',
+      name: '空间详情',
+      component: SpaceDetilPage,
+      props: true,
     },
     // 添加外部链接跳转的路由配置
     {

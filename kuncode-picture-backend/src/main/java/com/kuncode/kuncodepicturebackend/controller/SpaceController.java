@@ -23,7 +23,6 @@ import com.kuncode.kuncodepicturebackend.service.IUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,7 +47,7 @@ public class SpaceController {
      * @param request HttpServletRequest
      * @return 空间ID
      */
-    @PostMapping("/ada")
+    @PostMapping("/add")
     @AuthCheck
     public BaseResponse<Long> addSpace(@RequestBody SpaceAddRequest spaceAddRequest,HttpServletRequest request) {
         ThrowUtils.throwIf(spaceAddRequest == null,ErrorCode.PARAMS_ERROR);
@@ -65,7 +64,7 @@ public class SpaceController {
      */
     @PostMapping("/delete")
     @AuthCheck
-    public BaseResponse<Boolean> deletePicture(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
+    public BaseResponse<Boolean> deleteSpace(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -89,7 +88,7 @@ public class SpaceController {
      */
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> updatePicture(@RequestBody SpaceUpdateRequest spaceUpdateRequest, HttpServletRequest request) {
+    public BaseResponse<Long> updateSpace(@RequestBody SpaceUpdateRequest spaceUpdateRequest, HttpServletRequest request) {
         if (spaceUpdateRequest == null || spaceUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -104,7 +103,7 @@ public class SpaceController {
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
         boolean result = spaceService.updateById(space);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(true);
+        return ResultUtils.success(space.getId());
     }
 
     /**
@@ -115,7 +114,7 @@ public class SpaceController {
      */
     @GetMapping("/get")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Space> getPictureById(long id, HttpServletRequest request) {
+    public BaseResponse<Space> getSpaceById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
@@ -130,7 +129,7 @@ public class SpaceController {
      */
     @GetMapping("/get/vo")
     @AuthCheck
-    public BaseResponse<SpaceVO> getPictureVOById(long id, HttpServletRequest request) {
+    public BaseResponse<SpaceVO> getSpaceVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
@@ -145,7 +144,7 @@ public class SpaceController {
      */
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Page<Space>> listPictureByPage(@RequestBody SpaceQueryRequest spaceQueryRequest, HttpServletRequest request) {
+    public BaseResponse<Page<Space>> listSpaceByPage(@RequestBody SpaceQueryRequest spaceQueryRequest, HttpServletRequest request) {
         long current = spaceQueryRequest.getPage();
         long size = spaceQueryRequest.getPageSize();
 
@@ -162,7 +161,7 @@ public class SpaceController {
      */
     @PostMapping("/list/page/vo")
     @AuthCheck
-    public BaseResponse<Page<SpaceVO>> listPictureVOByPage(@RequestBody SpaceQueryRequest spaceQueryRequest, HttpServletRequest request) {
+    public BaseResponse<Page<SpaceVO>> listSpaceVOByPage(@RequestBody SpaceQueryRequest spaceQueryRequest, HttpServletRequest request) {
         int page = spaceQueryRequest.getPage();
         int pageSize = spaceQueryRequest.getPageSize();
         // size 不得超过20
@@ -179,7 +178,7 @@ public class SpaceController {
      */
     @PostMapping("/edit")
     @AuthCheck
-    public BaseResponse<Boolean> editPicture(@RequestBody SpaceEditRequest spaceEditRequest, HttpServletRequest request) {
+    public BaseResponse<Long> editSpace(@RequestBody SpaceEditRequest spaceEditRequest, HttpServletRequest request) {
         if (spaceEditRequest == null || spaceEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
@@ -199,7 +198,7 @@ public class SpaceController {
         }
         boolean result = spaceService.updateById(space);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(true);
+        return ResultUtils.success(space.getId());
     }
 
     /**
