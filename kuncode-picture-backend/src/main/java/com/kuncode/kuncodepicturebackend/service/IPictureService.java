@@ -11,6 +11,7 @@ import com.kuncode.kuncodepicturebackend.model.vo.PictureVO;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 public interface IPictureService extends IService<Picture> {
 
@@ -79,5 +80,14 @@ public interface IPictureService extends IService<Picture> {
      * @param picture 图片信息
      */
     void checkPictureAuth(User loginUser, Picture picture);
+
+    /**
+     * 颜色搜图
+     * @param spaceId 空间ID
+     * @param color 颜色
+     * @param loginUser 登录的用户
+     * @return List<PictureVO>
+     */
+    List<PictureVO> searchPictureByColor(Long spaceId, String color, User loginUser);
 
 }

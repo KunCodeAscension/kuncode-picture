@@ -4,7 +4,9 @@
     <a-flex justify="space-between">
       <h2>{{ space.spaceName }}（私有空间）</h2>
       <a-space size="middle">
-        <a-tooltip :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`">
+        <a-tooltip
+          :title="`占用空间 ${formatSize(space.totalSize)} / ${formatSize(space.maxSize)}`"
+        >
           <a-progress
             type="circle"
             :size="42"
@@ -16,6 +18,9 @@
         </a-button>
       </a-space>
     </a-flex>
+    <div style="margin-bottom: 16px" />
+    <!-- 搜索表单 -->
+    <PictureSearchForm :onSearch="onSearch" :onColorChange="onColorChange"/>
     <div style="margin-bottom: 16px" />
     <!-- 图片列表 -->
     <PictureList :dataList="dataList" :loading="loading" :showOp="true" :onReload="fetchData" />
@@ -31,10 +36,14 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
+import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { message } from 'ant-design-vue'
-import { listPictureVoByPageUsingPost } from '@/api/pictureController.ts'
+import {
+  listPictureVoByPageUsingPost,
+  searchPictureByColorUsingPost,
+} from '@/api/pictureController.ts'
 import { formatSize } from '@/utils'
 import PictureList from '@/components/PicyureList.vue'
 
@@ -73,12 +82,24 @@ const total = ref(0)
 const loading = ref(true)
 
 // 搜索条件
-const searchParams = reactive<API.PictureQueryRequest>({
+const searchParams = ref<API.PictureQueryRequest>({
   page: 1,
   pageSize: 12,
   sortField: 'createTime',
   sortOrder: 'descend',
 })
+
+const onSearch = (newSearchParams: API.PictureQueryRequest) => {
+  console.log('new', newSearchParams)
+
+  searchParams.value = {
+    ...searchParams.value,
+    ...newSearchParams,
+    page: 1,
+  }
+  console.log('searchparams', searchParams.value)
+  fetchData()
+}
 
 // 获取数据
 const fetchData = async () => {
@@ -86,12 +107,28 @@ const fetchData = async () => {
   // 转换搜索参数
   const params = {
     spaceId: props.id,
-    ...searchParams,
+    ...searchParams.value,
   }
   const res = await listPictureVoByPageUsingPost(params)
   if (res.data.code === 0 && res.data.data) {
     dataList.value = res.data.data.records ?? []
     total.value = res.data.data.total ?? 0
+  } else {
+    message.error('获取数据失败，' + res.data.message)
+  }
+  loading.value = false
+}
+
+const onColorChange = async (color: string) => {
+  loading.value = true
+  const res = await searchPictureByColorUsingPost({
+    picColor: color,
+    spaceId: props.id,
+  })
+  if (res.data.code === 0 && res.data.data) {
+    const data = res.data.data ?? []
+    dataList.value = data
+    total.value = data.length
   } else {
     message.error('获取数据失败，' + res.data.message)
   }
@@ -105,8 +142,8 @@ onMounted(() => {
 
 // 分页参数
 const onPageChange = (page: number, pageSize: number) => {
-  searchParams.page = page
-  searchParams.pageSize = pageSize
+  searchParams.value.page = page
+  searchParams.value.pageSize = pageSize
   fetchData()
 }
 </script>

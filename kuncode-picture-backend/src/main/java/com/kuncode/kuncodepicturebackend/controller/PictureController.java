@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.kuncode.kuncodepicturebackend.annotation.AuthCheck;
+import com.kuncode.kuncodepicturebackend.api.imagessearch.ImageSearchFacaed;
+import com.kuncode.kuncodepicturebackend.api.imagessearch.model.ImageSearchResult;
 import com.kuncode.kuncodepicturebackend.common.BaseResponse;
 import com.kuncode.kuncodepicturebackend.common.DeleteRequest;
 import com.kuncode.kuncodepicturebackend.common.ResultUtils;
@@ -378,6 +380,12 @@ public class PictureController {
         return ResultUtils.success(true);
     }
 
+    /**
+     * 通过关键词上传图片
+     * @param pictureUploadByBatchRequest 上传的图片信息
+     * @param request HttpServletRequest
+     * @return 上传成功数量
+     */
     @PostMapping("/upload/batch")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Integer> uploadPictureByBatch(@RequestBody PictureUploadByBatchRequest pictureUploadByBatchRequest, HttpServletRequest request) {
@@ -387,4 +395,35 @@ public class PictureController {
         return ResultUtils.success(uploadCount);
     }
 
+    /**
+     * 以图识图
+     * @param searchPictureByPictureRequest 要识别的图片信息
+     * @return List<ImageSearchResult>
+     */
+    @PostMapping("/search/picture")
+    public BaseResponse<List<ImageSearchResult>> searchPictureByPicture(@RequestBody SearchPictureByPictureRequest searchPictureByPictureRequest) {
+        ThrowUtils.throwIf(searchPictureByPictureRequest == null, ErrorCode.PARAMS_ERROR);
+        Long pictureId = searchPictureByPictureRequest.getPictureId();
+        ThrowUtils.throwIf(pictureId == null || pictureId <= 0, ErrorCode.PARAMS_ERROR);
+        Picture oldPicture = pictureService.getById(pictureId);
+        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
+        List<ImageSearchResult> resultList = ImageSearchFacaed.searchImage(oldPicture.getUrl());
+        return ResultUtils.success(resultList);
+    }
+
+    /**
+     * 颜色搜图
+     * @param searchPictureByColorRequest 颜色搜索信息
+     * @param request HttpServletRequest
+     * @return List<PictureVO>
+     */
+    @PostMapping("/search/color")
+    public BaseResponse<List<PictureVO>> searchPictureByColor(@RequestBody SearchPictureByColorRequest searchPictureByColorRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(searchPictureByColorRequest == null, ErrorCode.PARAMS_ERROR);
+        String picColor = searchPictureByColorRequest.getPicColor();
+        Long spaceId = searchPictureByColorRequest.getSpaceId();
+        User loginUser = userService.getLoginUser(request);
+        List<PictureVO> result = pictureService.searchPictureByColor(spaceId, picColor, loginUser);
+        return ResultUtils.success(result);
+    }
 }

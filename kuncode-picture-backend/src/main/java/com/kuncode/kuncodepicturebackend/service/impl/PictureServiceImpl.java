@@ -26,6 +26,7 @@ import com.kuncode.kuncodepicturebackend.model.vo.UserVO;
 import com.kuncode.kuncodepicturebackend.service.IPictureService;
 import com.kuncode.kuncodepicturebackend.service.ISpaceService;
 import com.kuncode.kuncodepicturebackend.service.IUserService;
+import com.kuncode.kuncodepicturebackend.utils.ColorSimilarUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -38,11 +39,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.io.IOException;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -139,6 +139,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             picture.setTags(pictureUploadRequest.getTags());
         }
         picture.setName(picName);
+        picture.setPicColor(uploadPictureResult.getPicColor());
         picture.setPicSize(uploadPictureResult.getPicSize());
         picture.setPicWidth(uploadPictureResult.getPicWidth());
         picture.setPicHeight(uploadPictureResult.getPicHeight());
@@ -344,6 +345,31 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         }
     }
 
+    @Override
+    public List<PictureVO> searchPictureByColor(Long spaceId, String color,User loginUser) {
+        Space space = spaceService.getById(spaceId);
+        ThrowUtils.throwIf(space == null,ErrorCode.PARAMS_ERROR,"空间不存在");
+        if (!space.getUserId().equals(loginUser.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR,"无该空间访问权限");
+        }
+        List<Picture> pictures = this.lambdaQuery()
+                .eq(Picture::getSpaceId, spaceId)
+                .isNotNull(Picture::getPicColor)
+                .list();
+        Color targetColor = Color.decode(color);
+        return pictures.stream()
+                .sorted(Comparator.comparingDouble(picture -> {
+                    String colorStr = picture.getPicColor();
+                    if (StrUtil.isBlank(colorStr)) {
+                        return Double.MAX_VALUE;
+                    }
+                    Color haxColor = Color.decode(colorStr);
+                    return -ColorSimilarUtils.calculateSimilarity(targetColor, haxColor);
+                }))
+                .limit(12)
+                .map(PictureVO::objToVo)
+                .collect(Collectors.toList());
+    }
 
 }
 

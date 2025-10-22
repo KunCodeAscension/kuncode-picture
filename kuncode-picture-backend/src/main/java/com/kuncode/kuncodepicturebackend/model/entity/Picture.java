@@ -79,6 +79,9 @@ public class Picture implements Serializable {
     @ApiModelProperty(value = "图片所属空间ID，如果为空说明在默认空间")
     private Long spaceId;
 
+    @ApiModelProperty(value = "图片颜色信息")
+    private String picColor;
+
     @TableLogic
     @ApiModelProperty(value = "是否删除")
     private Integer isDelete;

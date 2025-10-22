@@ -13,3 +13,9 @@ export function downloadImage(url?: string, fileName?: string) {
   }
   saveAs(url, fileName)
 }
+
+export function toHexColor(input: string) {
+  const colorValue = input.startsWith('0x') ? input.slice(2) : input
+  const hexColor = parseInt(colorValue, 16).toString(16).padStart(6, '0')
+  return `#${hexColor}`
+}

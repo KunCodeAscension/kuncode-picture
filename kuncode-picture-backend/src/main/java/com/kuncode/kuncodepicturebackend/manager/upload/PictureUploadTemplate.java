@@ -52,7 +52,7 @@ public abstract class PictureUploadTemplate {
                 if (objectList.size() > 1) {
                     thumbnailCiObject = objectList.get(1);
                 }
-                return buildResult(originFilename, compressedCiObject, thumbnailCiObject);
+                return buildResult(originFilename, compressedCiObject, thumbnailCiObject,imageInfo);
             }
             return buildResult(originFilename, file, uploadPath, imageInfo);  
         } catch (Exception e) {  
@@ -72,7 +72,7 @@ public abstract class PictureUploadTemplate {
       
     protected abstract void processFile(Object inputSource, File file) throws Exception;
 
-    private UploadPictureResult buildResult(String originFilename, CIObject compressedCiObject, CIObject thumbnailCiObject) {
+    private UploadPictureResult buildResult(String originFilename, CIObject compressedCiObject, CIObject thumbnailCiObject,ImageInfo imageInfo) {
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
         int picWidth = compressedCiObject.getWidth();
         int picHeight = compressedCiObject.getHeight();
@@ -81,6 +81,7 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicWidth(picWidth);
         uploadPictureResult.setPicHeight(picHeight);
         uploadPictureResult.setPicScale(picScale);
+        uploadPictureResult.setPicColor(imageInfo.getAve());
         uploadPictureResult.setPicFormat(compressedCiObject.getFormat());
         uploadPictureResult.setPicSize(compressedCiObject.getSize().longValue());
         uploadPictureResult.setThumbnailUrl(cosClientConfig.getHost() + "/" + thumbnailCiObject.getKey());
@@ -97,7 +98,8 @@ public abstract class PictureUploadTemplate {
         uploadPictureResult.setPicWidth(picWidth);  
         uploadPictureResult.setPicHeight(picHeight);  
         uploadPictureResult.setPicScale(picScale);  
-        uploadPictureResult.setPicFormat(imageInfo.getFormat());  
+        uploadPictureResult.setPicFormat(imageInfo.getFormat());
+        uploadPictureResult.setPicColor(imageInfo.getAve());
         uploadPictureResult.setPicSize(FileUtil.size(file));  
         uploadPictureResult.setUrl(cosClientConfig.getHost() + "/" + uploadPath);  
         return uploadPictureResult;  

@@ -11,6 +11,18 @@ declare namespace API {
     message?: string
   }
 
+  type BaseResponseListImageSearchResult_ = {
+    code?: number
+    data?: ImageSearchResult[]
+    message?: string
+  }
+
+  type BaseResponseListPictureVO_ = {
+    code?: number
+    data?: PictureVO[]
+    message?: string
+  }
+
   type BaseResponseListSpaceLevel_ = {
     code?: number
     data?: SpaceLevel[]
@@ -135,6 +147,11 @@ declare namespace API {
     id?: number
   }
 
+  type ImageSearchResult = {
+    fromUrl?: string
+    thumbUrl?: string
+  }
+
   type LoginUserVo = {
     /** 创建时间 */
     createTime?: string
@@ -211,6 +228,8 @@ declare namespace API {
     isDelete?: number
     /** 图片名 */
     name?: string
+    /** 图片颜色信息 */
+    picColor?: string
     /** 图片格式 */
     picFormat?: string
     /** 图片高度 */
@@ -323,6 +342,7 @@ declare namespace API {
     id?: number
     introduction?: string
     name?: string
+    picColor?: string
     picFormat?: string
     picHeight?: number
     picScale?: number
@@ -335,6 +355,15 @@ declare namespace API {
     url?: string
     user?: UserVO
     userId?: number
+  }
+
+  type SearchPictureByColorRequest = {
+    picColor?: string
+    spaceId?: number
+  }
+
+  type SearchPictureByPictureRequest = {
+    pictureId?: number
   }
 
   type Space = {

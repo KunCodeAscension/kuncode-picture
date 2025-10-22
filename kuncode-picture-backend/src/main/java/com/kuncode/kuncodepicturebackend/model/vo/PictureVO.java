@@ -65,7 +65,11 @@ public class PictureVO implements Serializable {
     private Long spaceId;
 
 
+    private String picColor;
+
+
     private UserVO user;
+
 
     private static final long serialVersionUID = 1L;
 
