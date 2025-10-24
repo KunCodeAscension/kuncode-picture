@@ -7,7 +7,7 @@ import com.kuncode.kuncodepicturebackend.exception.ErrorCode;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.kuncode.kuncodepicturebackend.mapper.UserMapper;
 import com.kuncode.kuncodepicturebackend.model.enums.UserRoleEnum;
-import com.kuncode.kuncodepicturebackend.model.vo.LoginUserVo;
+import com.kuncode.kuncodepicturebackend.model.vo.user.LoginUserVo;
 import com.kuncode.kuncodepicturebackend.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;

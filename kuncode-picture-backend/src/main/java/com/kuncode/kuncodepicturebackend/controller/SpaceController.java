@@ -16,8 +16,8 @@ import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceUpdateRequest;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.kuncode.kuncodepicturebackend.model.enums.SpaceLevelEnum;
-import com.kuncode.kuncodepicturebackend.model.vo.SpaceLevel;
-import com.kuncode.kuncodepicturebackend.model.vo.SpaceVO;
+import com.kuncode.kuncodepicturebackend.model.vo.space.SpaceLevel;
+import com.kuncode.kuncodepicturebackend.model.vo.space.SpaceVO;
 import com.kuncode.kuncodepicturebackend.service.ISpaceService;
 import com.kuncode.kuncodepicturebackend.service.IUserService;
 import lombok.RequiredArgsConstructor;
@@ -72,9 +72,7 @@ public class SpaceController {
         long id = deleteRequest.getId();
         Space oldSpace = spaceService.getById(id);
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
-        if (!oldSpace.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-        }
+        spaceService.checkSpaceAuth(oldSpace, loginUser);
         boolean result = spaceService.removeById(id);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
@@ -191,11 +189,9 @@ public class SpaceController {
         spaceService.validSpace(space,false);
         User loginUser = userService.getLoginUser(request);
         long id = spaceEditRequest.getId();
-        Space oldPicture = spaceService.getById(id);
-        ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
-        if (!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-        }
+        Space oldSpace = spaceService.getById(id);
+        ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
+        spaceService.checkSpaceAuth(oldSpace, loginUser);
         boolean result = spaceService.updateById(space);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(space.getId());

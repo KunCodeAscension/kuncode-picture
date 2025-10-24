@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddRequest;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
-import com.kuncode.kuncodepicturebackend.model.vo.SpaceVO;
+import com.kuncode.kuncodepicturebackend.model.vo.space.SpaceVO;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,5 +47,7 @@ public interface ISpaceService extends IService<Space> {
      * @return 空间ID
      */
     Long addSpace(SpaceAddRequest spaceAddRequest, User loginUser);
+
+    void checkSpaceAuth(Space space, User loginUser);
 
 }

@@ -1,4 +1,4 @@
-package com.kuncode.kuncodepicturebackend.model.vo;
+package com.kuncode.kuncodepicturebackend.model.vo.space;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

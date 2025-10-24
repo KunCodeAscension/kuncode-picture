@@ -16,11 +16,20 @@
         <a-button type="primary" :href="`/add_picture?spaceId=${id}`" target="_blank">
           + 创建图片
         </a-button>
+        <a-button
+          type="primary"
+          ghost
+          :icon="h(BarChartOutlined)"
+          :href="`/space_analyze?spaceId=${id}`"
+          target="_blank"
+        >
+          空间分析
+        </a-button>
       </a-space>
     </a-flex>
     <div style="margin-bottom: 16px" />
     <!-- 搜索表单 -->
-    <PictureSearchForm :onSearch="onSearch" :onColorChange="onColorChange"/>
+    <PictureSearchForm :onSearch="onSearch" :onColorChange="onColorChange" />
     <div style="margin-bottom: 16px" />
     <!-- 图片列表 -->
     <PictureList :dataList="dataList" :loading="loading" :showOp="true" :onReload="fetchData" />
@@ -36,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { h, onMounted, ref } from 'vue'
 import { getSpaceVoByIdUsingGet } from '@/api/spaceController.ts'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
 import { message } from 'ant-design-vue'
@@ -46,6 +55,7 @@ import {
 } from '@/api/pictureController.ts'
 import { formatSize } from '@/utils'
 import PictureList from '@/components/PicyureList.vue'
+import { BarChartOutlined } from '@ant-design/icons-vue'
 
 interface Props {
   id: string | number

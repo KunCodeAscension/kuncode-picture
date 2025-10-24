@@ -1,14 +1,11 @@
 package com.kuncode.kuncodepicturebackend.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.kuncode.kuncodepicturebackend.model.dto.file.UploadPictureResult;
 import com.kuncode.kuncodepicturebackend.model.dto.picture.*;
 import com.kuncode.kuncodepicturebackend.model.entity.Picture;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
-import com.kuncode.kuncodepicturebackend.model.vo.PictureVO;
-import org.springframework.web.multipart.MultipartFile;
+import com.kuncode.kuncodepicturebackend.model.vo.picture.PictureVO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

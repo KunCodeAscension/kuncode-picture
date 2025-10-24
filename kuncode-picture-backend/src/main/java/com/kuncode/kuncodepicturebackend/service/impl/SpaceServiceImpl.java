@@ -12,8 +12,8 @@ import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddRequest;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.kuncode.kuncodepicturebackend.model.enums.SpaceLevelEnum;
-import com.kuncode.kuncodepicturebackend.model.vo.SpaceVO;
-import com.kuncode.kuncodepicturebackend.model.vo.UserVO;
+import com.kuncode.kuncodepicturebackend.model.vo.space.SpaceVO;
+import com.kuncode.kuncodepicturebackend.model.vo.user.UserVO;
 import com.kuncode.kuncodepicturebackend.service.ISpaceService;
 import com.kuncode.kuncodepicturebackend.service.IUserService;
 import lombok.RequiredArgsConstructor;
@@ -156,6 +156,13 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper,Space> implements 
             lock.unlock();
         }
         return newSpaceId;
+    }
+
+    @Override
+    public void checkSpaceAuth(Space space, User loginUser) {
+        if (!space.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
     }
 
 

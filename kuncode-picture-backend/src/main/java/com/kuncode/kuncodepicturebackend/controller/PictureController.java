@@ -7,6 +7,10 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.kuncode.kuncodepicturebackend.annotation.AuthCheck;
+import com.kuncode.kuncodepicturebackend.api.AliYunAiApi;
+import com.kuncode.kuncodepicturebackend.api.aliyunAI.model.CreateOutPaintingTaskRequest;
+import com.kuncode.kuncodepicturebackend.api.aliyunAI.model.CreateOutPaintingTaskResponse;
+import com.kuncode.kuncodepicturebackend.api.aliyunAI.model.GetOutPaintingTaskResponse;
 import com.kuncode.kuncodepicturebackend.api.imagessearch.ImageSearchFacaed;
 import com.kuncode.kuncodepicturebackend.api.imagessearch.model.ImageSearchResult;
 import com.kuncode.kuncodepicturebackend.common.BaseResponse;
@@ -21,8 +25,8 @@ import com.kuncode.kuncodepicturebackend.model.entity.Picture;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.kuncode.kuncodepicturebackend.model.enums.PictureReviewStatusEnum;
-import com.kuncode.kuncodepicturebackend.model.vo.PictureTagCategory;
-import com.kuncode.kuncodepicturebackend.model.vo.PictureVO;
+import com.kuncode.kuncodepicturebackend.model.vo.picture.PictureTagCategory;
+import com.kuncode.kuncodepicturebackend.model.vo.picture.PictureVO;
 import com.kuncode.kuncodepicturebackend.service.IPictureService;
 import com.kuncode.kuncodepicturebackend.service.ISpaceService;
 import com.kuncode.kuncodepicturebackend.service.IUserService;
@@ -42,6 +46,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import static com.kuncode.kuncodepicturebackend.constants.RedisKeyConstant.PICTURE_LIST_VO_CACHE_KEY;
@@ -63,6 +68,8 @@ public class PictureController {
     final TransactionTemplate transactionTemplate;
 
     final RedissonClient redissonClient;
+
+    final AliYunAiApi aliYunAiApi;
 
     final Cache<String,String> LOCAL_CACHE = Caffeine.newBuilder()
             .initialCapacity(1024)
@@ -425,5 +432,28 @@ public class PictureController {
         User loginUser = userService.getLoginUser(request);
         List<PictureVO> result = pictureService.searchPictureByColor(spaceId, picColor, loginUser);
         return ResultUtils.success(result);
+    }
+
+    @PostMapping("/out_painting/create_task")
+    public BaseResponse<CreateOutPaintingTaskResponse> createPictureOutPaintingTask(@RequestBody CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, HttpServletRequest request) {
+        Long pictureId = createPictureOutPaintingTaskRequest.getPictureId();
+        Picture picture = Optional.ofNullable(pictureService.getById(pictureId)).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND_ERROR, "图片不存在"));
+        User loginUser = userService.getLoginUser(request);
+        // 权限校验
+        pictureService.checkPictureAuth(loginUser,picture);
+        CreateOutPaintingTaskRequest createOutPaintingTaskRequest = new CreateOutPaintingTaskRequest();
+        CreateOutPaintingTaskRequest.Input input = new CreateOutPaintingTaskRequest.Input();
+        input.setImageUrl(picture.getUrl());
+        createOutPaintingTaskRequest.setInput(input);
+        createOutPaintingTaskRequest.setParameters(createPictureOutPaintingTaskRequest.getParameters());
+        CreateOutPaintingTaskResponse outPaintingTask = aliYunAiApi.createOutPaintingTask(createOutPaintingTaskRequest);
+        return ResultUtils.success(outPaintingTask);
+    }
+
+    @GetMapping("/out_painting/get_task")
+    public BaseResponse<GetOutPaintingTaskResponse> getPictureOutPaintingTask(String taskId) {
+        ThrowUtils.throwIf(StrUtil.isBlank(taskId), ErrorCode.PARAMS_ERROR);
+        GetOutPaintingTaskResponse task = aliYunAiApi.getOutPaintingTask(taskId);
+        return ResultUtils.success(task);
     }
 }

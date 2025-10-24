@@ -1,13 +1,12 @@
-package com.kuncode.kuncodepicturebackend.model.vo;
+package com.kuncode.kuncodepicturebackend.model.vo.picture;
 
 import cn.hutool.json.JSONUtil;
 import com.kuncode.kuncodepicturebackend.model.entity.Picture;
-import io.swagger.annotations.ApiModelProperty;
+import com.kuncode.kuncodepicturebackend.model.vo.user.UserVO;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 

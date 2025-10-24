@@ -2,7 +2,7 @@ package com.kuncode.kuncodepicturebackend.service;
 
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.kuncode.kuncodepicturebackend.model.vo.LoginUserVo;
+import com.kuncode.kuncodepicturebackend.model.vo.user.LoginUserVo;
 
 import javax.servlet.http.HttpServletRequest;
 

@@ -1,6 +1,7 @@
-package com.kuncode.kuncodepicturebackend.model.vo;
+package com.kuncode.kuncodepicturebackend.model.vo.space;
 
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
+import com.kuncode.kuncodepicturebackend.model.vo.user.UserVO;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

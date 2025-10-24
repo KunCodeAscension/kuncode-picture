@@ -1,4 +1,4 @@
-package com.kuncode.kuncodepicturebackend.model.vo;
+package com.kuncode.kuncodepicturebackend.model.vo.user;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
