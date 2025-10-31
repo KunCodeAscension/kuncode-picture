@@ -218,7 +218,7 @@ const getOldPicture = async () => {
       pictureForm.category = data.category
       pictureForm.tags = data.tags
     } else {
-      message.error('获取图片信息错误，无权编辑个人空间图片')
+      message.error('获取图片信息错误，' + res.data.message)
     }
   }
 }

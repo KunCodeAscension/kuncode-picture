@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.kuncode.kuncodepicturebackend.exception.BusinessException;
 import com.kuncode.kuncodepicturebackend.exception.ErrorCode;
+import com.kuncode.kuncodepicturebackend.manager.auth.StpKit;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.kuncode.kuncodepicturebackend.mapper.UserMapper;
 import com.kuncode.kuncodepicturebackend.model.enums.UserRoleEnum;
@@ -79,6 +80,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
             throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户不存在或密码错误");
         }
         request.getSession().setAttribute(USER_LOGIN_STATE,user);
+        // 空间鉴权
+        StpKit.SPACE.login(user.getId());
+        StpKit.SPACE.getSession().set(USER_LOGIN_STATE,user);
         return LoginUserVo.toLoginUserVo(user);
     }
 

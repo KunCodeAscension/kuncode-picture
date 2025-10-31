@@ -13,6 +13,7 @@ import MySpacePage from '@/pages/space/MySpacePage.vue'
 import SpaceDetilPage from '@/pages/space/SpaceDetilPage.vue'
 import SearchPicturePage from '@/pages/picture/SearchPicturePage.vue'
 import SpaceAnalyzePage from '@/pages/space/SpaceAnalyzePage.vue'
+import SpaceUserManagePage from '@/pages/admin/SpaceUserManagePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -88,6 +89,12 @@ const router = createRouter({
       path: '/search_picture',
       name: '图片搜索',
       component: SearchPicturePage,
+    },
+    {
+      path: '/spaceUserManage/:id/:spaceName',
+      name: '空间成员管理',
+      component: SpaceUserManagePage,
+      props: true,
     },
     // 添加外部链接跳转的路由配置
     {

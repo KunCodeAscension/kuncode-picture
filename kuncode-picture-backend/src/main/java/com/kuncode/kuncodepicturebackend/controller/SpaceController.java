@@ -9,6 +9,7 @@ import com.kuncode.kuncodepicturebackend.constants.UserConstant;
 import com.kuncode.kuncodepicturebackend.exception.BusinessException;
 import com.kuncode.kuncodepicturebackend.exception.ErrorCode;
 import com.kuncode.kuncodepicturebackend.exception.ThrowUtils;
+import com.kuncode.kuncodepicturebackend.manager.auth.SpaceUserAuthManager;
 import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddRequest;
 import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceEditRequest;
 import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceQueryRequest;
@@ -41,6 +42,8 @@ public class SpaceController {
 
     final IUserService userService;
 
+    final SpaceUserAuthManager spaceUserAuthManager;
+
     /**
      * 添加用户空间
      * @param spaceAddRequest 要添加的空间信息
@@ -49,7 +52,7 @@ public class SpaceController {
      */
     @PostMapping("/add")
     @AuthCheck
-    public BaseResponse<Long> addSpace(@RequestBody SpaceAddRequest spaceAddRequest,HttpServletRequest request) {
+    public BaseResponse<Long> addSpace(@RequestBody SpaceAddRequest spaceAddRequest,HttpServletRequest request) throws InterruptedException {
         ThrowUtils.throwIf(spaceAddRequest == null,ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         Long res = spaceService.addSpace(spaceAddRequest, loginUser);
@@ -131,7 +134,11 @@ public class SpaceController {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
-        return ResultUtils.success(spaceService.getSpaceVO(space, request));
+        SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
+        User loginUser = userService.getLoginUser(request);
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        spaceVO.setPermissionList(permissionList);
+        return ResultUtils.success(spaceVO);
     }
 
     /**

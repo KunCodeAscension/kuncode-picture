@@ -46,7 +46,7 @@ public interface ISpaceService extends IService<Space> {
      * @param loginUser 登陆的用户
      * @return 空间ID
      */
-    Long addSpace(SpaceAddRequest spaceAddRequest, User loginUser);
+    Long addSpace(SpaceAddRequest spaceAddRequest, User loginUser) throws InterruptedException;
 
     void checkSpaceAuth(Space space, User loginUser);
 

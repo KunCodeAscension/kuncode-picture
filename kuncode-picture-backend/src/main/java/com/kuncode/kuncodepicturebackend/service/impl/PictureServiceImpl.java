@@ -86,9 +86,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         if(spaceId != null){
             Space space = spaceService.getById(spaceId);
             ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR,"空间不存在");
-            if(!loginUser.getId().equals(space.getUserId())){
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR,"无权访问");
-            }
+//            if(!loginUser.getId().equals(space.getUserId())){
+//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR,"无权访问");
+//            }
             if(space.getTotalSize() >= space.getMaxSize()){
                 throw new BusinessException(ErrorCode.SYSTEM_ERROR,"空间大小不足");
             }
@@ -100,10 +100,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             Picture oldPicture = this.getById(pictureId);
             // 图片不存在
             ThrowUtils.throwIf(oldPicture == null, ErrorCode.PARAMS_ERROR);
-            // 当前图片不是自己的 当前角色也不是管理员
-            if(!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-            }
+//            // 当前图片不是自己的 当前角色也不是管理员
+//            if(!oldPicture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+//                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+//            }
             // 图片已经是待审核状态
             if(oldPicture.getReviewStatus().equals(PictureReviewStatusEnum.REVIEWING.getValue())){
                 throw new BusinessException(ErrorCode.PARAMS_ERROR,"图片正在审核请勿修改");

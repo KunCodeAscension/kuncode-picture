@@ -76,6 +76,7 @@ public interface IPictureService extends IService<Picture> {
      * @param loginUser 登录的用户
      * @param picture 图片信息
      */
+    @Deprecated
     void checkPictureAuth(User loginUser, Picture picture);
 
     /**

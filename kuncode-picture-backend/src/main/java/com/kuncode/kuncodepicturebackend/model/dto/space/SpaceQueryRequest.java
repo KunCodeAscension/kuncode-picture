@@ -26,6 +26,9 @@ public class SpaceQueryRequest extends PageRequest implements Serializable {
     private Integer spaceLevel;
 
 
+    private Integer spaceType;
+
+
     private static final long serialVersionUID = 1L;
 
     public static QueryWrapper<Space> getQueryWrapper(SpaceQueryRequest spaceQueryRequest) {
@@ -37,12 +40,14 @@ public class SpaceQueryRequest extends PageRequest implements Serializable {
         Long userId = spaceQueryRequest.getUserId();
         String spaceName = spaceQueryRequest.getSpaceName();
         Integer spaceLevel = spaceQueryRequest.getSpaceLevel();
+        Integer spaceType = spaceQueryRequest.getSpaceType();
         String sortField = spaceQueryRequest.getSortField();
         String sortOrder = spaceQueryRequest.getSortOrder();
         queryWrapper.eq(ObjUtil.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjUtil.isNotEmpty(userId), "userId", userId);
         queryWrapper.eq(ObjUtil.isNotEmpty(spaceName), "spaceName", spaceName);
         queryWrapper.eq(ObjUtil.isNotEmpty(spaceLevel), "spaceLevel", spaceLevel);
+        queryWrapper.eq(ObjUtil.isNotEmpty(spaceType), "spaceType", spaceType);
         queryWrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), sortField);
         return queryWrapper;
     }

@@ -39,6 +39,9 @@ public class Space implements Serializable {
     @ApiModelProperty(value = "创建时间")
     private Date createTime;
 
+    @ApiModelProperty(value = "空间类型 0代表个人空间 1代表团队空间")
+    private Integer spaceType;
+
     @ApiModelProperty(value = "编辑时间")
     private Date editTime;
 

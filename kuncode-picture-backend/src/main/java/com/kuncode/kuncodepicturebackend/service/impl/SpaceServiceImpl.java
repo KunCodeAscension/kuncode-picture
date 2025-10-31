@@ -10,36 +10,52 @@ import com.kuncode.kuncodepicturebackend.exception.ThrowUtils;
 import com.kuncode.kuncodepicturebackend.mapper.SpaceMapper;
 import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddRequest;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
+import com.kuncode.kuncodepicturebackend.model.entity.SpaceUser;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.kuncode.kuncodepicturebackend.model.enums.SpaceLevelEnum;
+import com.kuncode.kuncodepicturebackend.model.enums.SpaceRoleEnum;
+import com.kuncode.kuncodepicturebackend.model.enums.SpaceTypeEnum;
 import com.kuncode.kuncodepicturebackend.model.vo.space.SpaceVO;
 import com.kuncode.kuncodepicturebackend.model.vo.user.UserVO;
 import com.kuncode.kuncodepicturebackend.service.ISpaceService;
+import com.kuncode.kuncodepicturebackend.service.ISpaceUserService;
 import com.kuncode.kuncodepicturebackend.service.IUserService;
-import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.kuncode.kuncodepicturebackend.constants.RedisKeyConstant.SPACE_LEVEL_COMMON_ONLY_LOCK_KEY;
 
 @Service
-@RequiredArgsConstructor
 public class SpaceServiceImpl extends ServiceImpl<SpaceMapper,Space> implements ISpaceService {
 
-    final IUserService userService;
+    @Resource
+    IUserService userService;
 
-    final RedissonClient redissonClient;
+    @Resource
+    RedissonClient redissonClient;
 
-    final TransactionTemplate transactionTemplate;
+    @Resource
+    DataSourceTransactionManager transactionManager;
+
+    @Resource
+    ISpaceUserService spaceUserService;
+
+//    @Lazy
+//    @Resource
+//    DynamicShardingManager dynamicShardingManager;
 
     @Override
     public void validSpace(Space space, boolean add) {
@@ -48,7 +64,8 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper,Space> implements 
         String spaceName = space.getSpaceName();
         Integer spaceLevel = space.getSpaceLevel();
         SpaceLevelEnum spaceLevelEnum = SpaceLevelEnum.getEnumByValue(spaceLevel);
-
+        Integer spaceType = space.getSpaceType();
+        SpaceTypeEnum spaceTypeEnum = SpaceTypeEnum.getEnumByValue(spaceType);
         if (add) {
             if (StrUtil.isBlank(spaceName)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间名称不能为空");
@@ -56,13 +73,18 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper,Space> implements 
             if (spaceLevel == null) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间级别不能为空");
             }
+            if (spaceType == null) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间类型不能为空");
+            }
         }
-
         if (spaceLevel != null && spaceLevelEnum == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间级别不存在");
         }
         if (StrUtil.isNotBlank(spaceName) && spaceName.length() > 30) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间名称过长");
+        }
+        if(spaceType != null && spaceTypeEnum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"空间类别不存在");
         }
     }
 
@@ -121,14 +143,17 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper,Space> implements 
     }
 
     @Override
-    public Long addSpace(SpaceAddRequest spaceAddRequest, User loginUser) {
+    public Long addSpace(SpaceAddRequest spaceAddRequest, User loginUser) throws InterruptedException {
         Space space = new Space();
         BeanUtils.copyProperties(spaceAddRequest, space);
         if (StrUtil.isBlank(spaceAddRequest.getSpaceName())) {
             space.setSpaceName("默认空间");
         }
-        if (spaceAddRequest.getSpaceLevel() == null) {
+        if (space.getSpaceLevel() == null) {
             space.setSpaceLevel(SpaceLevelEnum.COMMON.getValue());
+        }
+        if (space.getSpaceType() == null) {
+            space.setSpaceType(SpaceTypeEnum.PRIVATE.getValue());
         }
         this.fillSpaceBySpaceLevel(space);
         this.validSpace(space, true);
@@ -138,19 +163,35 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper,Space> implements 
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限创建指定级别的空间");
         }
         RLock lock = redissonClient.getLock(String.format(SPACE_LEVEL_COMMON_ONLY_LOCK_KEY,userId.toString()));
-        boolean b = lock.tryLock();
+        boolean b = lock.tryLock(0, 5, TimeUnit.SECONDS);
         if (!b) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR,"点击频繁");
         }
         Long newSpaceId;
+        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
         try{
-            boolean exists = this.lambdaQuery().eq(Space::getUserId, userId).exists();
-            ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR, "每个用户仅能有一个私有空间");
+            boolean exists = this.lambdaQuery()
+                    .eq(Space::getUserId, userId)
+                    .eq(Space::getSpaceType, space.getSpaceType())
+                    .exists();
+            ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR, "每个用户仅能有一个特定空间");
             boolean result = this.save(space);
-            ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+            ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "创建空间失败");
             newSpaceId = space.getId();
+            if(SpaceTypeEnum.TEAM.getValue() == space.getSpaceType()){
+                SpaceUser spaceUser = new SpaceUser();
+                spaceUser.setSpaceId(space.getId());
+                spaceUser.setUserId(userId);
+                spaceUser.setSpaceRole(SpaceRoleEnum.ADMIN.getValue());
+                boolean save = spaceUserService.save(spaceUser);
+                ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR, "创建团队成员记录失败");
+            }
+            // TODO 完善分表逻辑 公共图库 ID 修改为 0
+//            dynamicShardingManager.createSpacePictureTable(space);
+            transactionManager.commit(status);
         }catch (Exception e){
             log.error("空间创建错误",e);
+            transactionManager.commit(status);
             throw new BusinessException(ErrorCode.PARAMS_ERROR,e.getMessage());
         }finally {
             lock.unlock();

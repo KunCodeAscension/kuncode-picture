@@ -1,5 +1,7 @@
 package com.kuncode.kuncodepicturebackend.config;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import com.kuncode.kuncodepicturebackend.common.BaseResponse;
 import com.kuncode.kuncodepicturebackend.common.ResultUtils;
 import com.kuncode.kuncodepicturebackend.exception.BusinessException;
@@ -21,17 +23,25 @@ import java.util.List;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(NotLoginException.class)
+    @ResponseBody
+    public BaseResponse<?> notLoginExceptionHandler(NotLoginException e){
+        log.error("NotLoginException",e);
+        return ResultUtils.error(e.getCode(),e.getMessage());
+    }
+
+    @ExceptionHandler(NotPermissionException.class)
+    @ResponseBody
+    public BaseResponse<?> notPermissionExceptionHandler(NotPermissionException e){
+        log.error("NotPermissionException",e);
+        return ResultUtils.error(e.getCode(),e.getMessage());
+    }
+
     @ExceptionHandler(BusinessException.class)
     @ResponseBody
     public BaseResponse<?> businessExceptionHandler(BusinessException e){
         log.error("BusinessException",e);
         return ResultUtils.error(e.getCode(),e.getMessage());
-    }
-
-    @ExceptionHandler(RuntimeException.class)
-    public BaseResponse<?> runtimeException(RuntimeException e){
-        log.error("RuntimeException",e);
-        return ResultUtils.error(ErrorCode.PARAMS_ERROR,"系统错误");
     }
 
     @ExceptionHandler(BindException.class)
@@ -41,6 +51,12 @@ public class GlobalExceptionHandler {
         List<ObjectError> allErrors = bindingResult.getAllErrors();
         // 暂时只返回一个错误信息即可
         return ResultUtils.error(ErrorCode.PARAMS_ERROR,allErrors.get(0).getDefaultMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public BaseResponse<?> Exception(Exception e){
+        log.error("Exception",e);
+        return ResultUtils.error(ErrorCode.PARAMS_ERROR,"系统错误");
     }
 
 }
