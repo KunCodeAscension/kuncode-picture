@@ -136,7 +136,7 @@ public class SpaceController {
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
         SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
         User loginUser = userService.getLoginUser(request);
-        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space,null, loginUser);
         spaceVO.setPermissionList(permissionList);
         return ResultUtils.success(spaceVO);
     }

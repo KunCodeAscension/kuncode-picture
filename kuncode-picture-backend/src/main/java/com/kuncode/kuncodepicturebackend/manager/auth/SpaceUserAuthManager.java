@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.kuncode.kuncodepicturebackend.manager.auth.model.SpaceUserAuthConfig;
 import com.kuncode.kuncodepicturebackend.manager.auth.model.SpaceUserPermissionConstant;
 import com.kuncode.kuncodepicturebackend.manager.auth.model.SpaceUserRole;
+import com.kuncode.kuncodepicturebackend.model.entity.Picture;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.SpaceUser;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -53,18 +55,21 @@ public class SpaceUserAuthManager {
     /**
      * 获取权限列表
      */
-    public List<String> getPermissionList(Space space, User loginUser) {
+    public List<String> getPermissionList(Space space, Picture picture, User loginUser) {
         if (loginUser == null) {
+            return new ArrayList<>();
+        }
+        if (space == null && picture == null) {
             return new ArrayList<>();
         }
         // 管理员权限
         List<String> ADMIN_PERMISSIONS = getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue());
         // 公共图库
         if (space == null) {
-            if (userService.isAdmin(loginUser)) {
+            if (userService.isAdmin(loginUser) || picture.getUserId().equals(loginUser.getId())) {
                 return ADMIN_PERMISSIONS;
             }
-            return new ArrayList<>(Arrays.asList(SpaceUserPermissionConstant.PICTURE_VIEW));
+            return Collections.singletonList(SpaceUserPermissionConstant.PICTURE_VIEW);
         }
         SpaceTypeEnum spaceTypeEnum = SpaceTypeEnum.getEnumByValue(space.getSpaceType());
         if (spaceTypeEnum == null) {

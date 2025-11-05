@@ -226,13 +226,13 @@ public class PictureController {
                 throw new BusinessException(ErrorCode.FORBIDDEN_ERROR,"图片不存在或在审核");
             }
         }
-        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
-        if(space == null && picture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-            // 公共图库中图片 当前为图片创建人
-            permissionList.add(SpaceUserPermissionConstant.PICTURE_EDIT);
-            permissionList.add(SpaceUserPermissionConstant.PICTURE_DELETE);
-            permissionList.add(SpaceUserPermissionConstant.PICTURE_UPLOAD);
-        }
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, picture, loginUser);
+//        if(space == null && picture.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+//            // 公共图库中图片 当前为图片创建人
+//            permissionList.add(SpaceUserPermissionConstant.PICTURE_EDIT);
+//            permissionList.add(SpaceUserPermissionConstant.PICTURE_DELETE);
+//            permissionList.add(SpaceUserPermissionConstant.PICTURE_UPLOAD);
+//        }
         PictureVO pictureVO = pictureService.getPictureVO(picture, request);
         pictureVO.setPermissionList(permissionList);
         return ResultUtils.success(pictureVO);
