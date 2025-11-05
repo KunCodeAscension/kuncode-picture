@@ -15,6 +15,7 @@ import com.kuncode.kuncodepicturebackend.model.dto.spaceuser.SpaceUserQueryReque
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.SpaceUser;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
+import com.kuncode.kuncodepicturebackend.model.enums.SpaceTypeEnum;
 import com.kuncode.kuncodepicturebackend.model.vo.spaceuser.SpaceUserVO;
 import com.kuncode.kuncodepicturebackend.service.ISpaceService;
 import com.kuncode.kuncodepicturebackend.service.ISpaceUserService;
@@ -51,6 +52,10 @@ public class SpaceUserController {
     @SaSpaceCheckPermission(value = SpaceUserPermissionConstant.SPACE_USER_MANAGE)
     public BaseResponse<Long> addSpaceUser(@RequestBody SpaceUserAddRequest spaceUserAddRequest, HttpServletRequest request) {
         ThrowUtils.throwIf(spaceUserAddRequest == null, ErrorCode.PARAMS_ERROR);
+        Space space = spaceService.getById(spaceUserAddRequest.getSpaceId());
+        if(space.getSpaceType() != SpaceTypeEnum.TEAM.getValue()){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"个人空间无法添加成员");
+        }
         long id = spaceUserService.addSpaceUser(spaceUserAddRequest);
         return ResultUtils.success(id);
     }

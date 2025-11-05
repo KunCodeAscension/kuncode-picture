@@ -4,7 +4,8 @@
       {{ route.query?.id ? '修改图片' : '创建图片' }}
     </h2>
     <a-typography-paragraph v-if="spaceId" type="secondary">
-      保存至空间：<a :href="`/space/${spaceId}`" target="_blank">{{ spaceId }}</a>
+      保存至空间：<a v-if="spaceId == 0" :href="`/`" target="_blank">公共图库</a
+      ><a v-else :href="`/space/${spaceId}`" target="_blank">{{spaceId}}</a>
     </a-typography-paragraph>
     <!-- 选择上传方式 -->
     <a-tabs v-model:activeKey="uploadType">
@@ -97,7 +98,7 @@ import {
 } from '@/api/pictureController.ts'
 import { useRoute, useRouter } from 'vue-router'
 import UrlPictureUpload from '@/components/UrlPictureUpload.vue'
-import { EditOutlined , FullscreenOutlined} from '@ant-design/icons-vue'
+import { EditOutlined, FullscreenOutlined } from '@ant-design/icons-vue'
 import ImageCropper from '@/components/ImageCropper.vue'
 import ImageOutPainting from '@/components/ImageOutPainting.vue'
 
@@ -171,14 +172,13 @@ const onSuccess = (newPicture: API.PictureVO) => {
  * @param values
  */
 const handleSubmit = async (values: any) => {
-  console.log(values)
   const pictureId = picture.value.id
   if (!pictureId) {
     return
   }
   const res = await editPictureUsingPost({
     id: pictureId,
-    spaceId: spaceId.value,
+    spaceId: spaceId.value == 0 ? null : spaceId.value,
     ...values,
   })
   // 操作成功
@@ -222,6 +222,7 @@ const getTagCategoryOptions = async () => {
 
 onMounted(() => {
   getTagCategoryOptions()
+  getOldPicture()
 })
 
 // 获取老数据
@@ -244,10 +245,6 @@ const getOldPicture = async () => {
     }
   }
 }
-
-onMounted(() => {
-  getOldPicture()
-})
 </script>
 
 <style scoped>

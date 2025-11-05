@@ -2,4 +2,34 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.kuncode.kuncodepicturebackend.mapper.PictureMapper">
 
+    <!-- 通过 id 更新，排除 spaceId -->
+    <update id="updateByIdExcludeSpaceId" parameterType="com.kuncode.kuncodepicturebackend.model.entity.Picture">
+    UPDATE picture
+    <set>
+        <!-- 只更新非 null 的字段（可选：用 if 标签实现动态更新） -->
+        <if test="picture.url != null">url = #{picture.url},</if>
+        <if test="picture.name != null">name = #{picture.name},</if>
+        <if test="picture.introduction != null">introduction = #{picture.introduction},</if>
+        <if test="picture.category != null">category = #{picture.category},</if>
+        <if test="picture.tags != null">tags = #{picture.tags},</if>
+        <if test="picture.picSize != null">picSize = #{picture.picSize},</if>
+        <if test="picture.picWidth != null">picWidth = #{picture.picWidth},</if>
+        <if test="picture.picHeight != null">picHeight = #{picture.picHeight},</if>
+        <if test="picture.picScale != null">picScale = #{picture.picScale},</if>
+        <if test="picture.picFormat != null">picFormat = #{picture.picFormat},</if>
+        <if test="picture.userId != null">userId = #{picture.userId},</if>
+        <if test="picture.thumbnailUrl != null">thumbnailUrl = #{picture.thumbnailUrl},</if>
+        <if test="picture.createTime != null">createTime = #{picture.createTime},</if>
+        <if test="picture.editTime != null">editTime = #{picture.editTime},</if>
+        <if test="picture.updateTime != null">updateTime = #{picture.updateTime},</if>
+        <if test="picture.reviewStatus != null">reviewStatus = #{picture.reviewStatus},</if>
+        <if test="picture.reviewMessage != null">reviewMessage = #{picture.reviewMessage},</if>
+        <if test="picture.reviewerId != null">reviewerId = #{picture.reviewerId},</if>
+        <if test="picture.reviewTime != null">reviewTime = #{picture.reviewTime},</if>
+        <if test="picture.picColor != null">picColor = #{picture.picColor},</if>
+        <if test="picture.isDelete != null">isDelete = #{picture.isDelete}</if>
+    </set>
+    WHERE id = #{picture.id}
+    AND isDelete = 0 <!-- 保留你的逻辑删除条件 -->
+    </update>
 </mapper>

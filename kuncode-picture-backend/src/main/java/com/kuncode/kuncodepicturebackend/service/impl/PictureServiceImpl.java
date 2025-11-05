@@ -125,6 +125,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
         picture.setSpaceId(spaceId);
         picture.setUrl(uploadPictureResult.getUrl());
         String picName = uploadPictureResult.getPicName();
+        spaceId = spaceId == null ? 0L : spaceId;
+        picture.setSpaceId(spaceId);
         if(StrUtil.isNotBlank(pictureUploadRequest.getFileName())) {
             picName = pictureUploadRequest.getFileName();
         }
@@ -154,9 +156,8 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             picture.setEditTime(new Date());
             transactionTemplate.execute(status -> {
                 Picture oldPicture = this.getById(pictureId);
-                boolean saveOrUpdate = this.saveOrUpdate(picture);
-                ThrowUtils.throwIf(!saveOrUpdate, ErrorCode.OPERATION_ERROR, "图片上传失败");
-                if(finalSpaceId != null){
+                this.getBaseMapper().updateByIdExcludeSpaceId(picture);
+                if(finalSpaceId != 0L){
                     long sizeDiff = picture.getPicSize() - oldPicture.getPicSize();
                     boolean update = spaceService.lambdaUpdate()
                             .eq(Space::getId, finalSpaceId)
@@ -173,7 +174,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
             transactionTemplate.execute(status -> {
                 boolean saveOrUpdate = this.saveOrUpdate(picture);
                 ThrowUtils.throwIf(!saveOrUpdate, ErrorCode.OPERATION_ERROR, "图片上传失败");
-                if(finalSpaceId != null){
+                if(finalSpaceId != 0L){
                     String sql = String.format(
                             "totalSize = totalSize + %d, totalCount = totalCount + 1",
                             picture.getPicSize() // 传入新图片大小

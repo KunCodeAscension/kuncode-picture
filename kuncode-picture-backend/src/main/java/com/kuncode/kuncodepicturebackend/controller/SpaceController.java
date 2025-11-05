@@ -17,6 +17,7 @@ import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceUpdateRequest;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.kuncode.kuncodepicturebackend.model.enums.SpaceLevelEnum;
+import com.kuncode.kuncodepicturebackend.model.enums.SpaceTypeEnum;
 import com.kuncode.kuncodepicturebackend.model.vo.space.SpaceLevel;
 import com.kuncode.kuncodepicturebackend.model.vo.space.SpaceVO;
 import com.kuncode.kuncodepicturebackend.service.ISpaceService;
@@ -102,6 +103,9 @@ public class SpaceController {
         long id = spaceUpdateRequest.getId();
         Space oldSpace = spaceService.getById(id);
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
+        if(oldSpace.getSpaceType() == SpaceTypeEnum.TEAM.getValue() && !oldSpace.getSpaceLevel().equals(spaceUpdateRequest.getSpaceLevel())) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"团队空间不支持修改空间级别");
+        }
         boolean result = spaceService.updateById(space);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(space.getId());

@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.kuncode.kuncodepicturebackend.exception.BusinessException;
 import com.kuncode.kuncodepicturebackend.exception.ErrorCode;
 import com.kuncode.kuncodepicturebackend.exception.ThrowUtils;
+import com.kuncode.kuncodepicturebackend.manager.sharding.DynamicShardingManager;
 import com.kuncode.kuncodepicturebackend.mapper.SpaceMapper;
 import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddRequest;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
@@ -23,6 +24,7 @@ import com.kuncode.kuncodepicturebackend.service.IUserService;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.TransactionStatus;
@@ -53,9 +55,9 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper,Space> implements 
     @Resource
     ISpaceUserService spaceUserService;
 
-//    @Lazy
-//    @Resource
-//    DynamicShardingManager dynamicShardingManager;
+    @Lazy
+    @Resource
+    DynamicShardingManager dynamicShardingManager;
 
     @Override
     public void validSpace(Space space, boolean add) {
@@ -186,8 +188,10 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper,Space> implements 
                 boolean save = spaceUserService.save(spaceUser);
                 ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR, "创建团队成员记录失败");
             }
-            // TODO 完善分表逻辑 公共图库 ID 修改为 0
-//            dynamicShardingManager.createSpacePictureTable(space);
+            if(SpaceLevelEnum.FLAGSHIP.getValue() == space.getSpaceLevel()){
+                // 旗舰版空间创建单数的表存放图片
+                dynamicShardingManager.createSpacePictureTable(space);
+            }
             transactionManager.commit(status);
         }catch (Exception e){
             log.error("空间创建错误",e);

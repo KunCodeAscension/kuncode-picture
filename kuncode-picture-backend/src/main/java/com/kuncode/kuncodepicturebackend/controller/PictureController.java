@@ -138,7 +138,7 @@ public class PictureController {
             boolean result = pictureService.removeById(oldPicture.getId());
             ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
             Long spaceId = oldPicture.getSpaceId();
-            if (spaceId != null) {
+            if (spaceId != 0L) {
                 boolean update = spaceService.lambdaUpdate()
                         .eq(Space::getId, spaceId)
                         .setSql("totalSize = totalSize - " + oldPicture.getPicSize())
@@ -165,14 +165,10 @@ public class PictureController {
         if (pictureUpdateRequest == null || pictureUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-
         Picture picture = new Picture();
         BeanUtils.copyProperties(pictureUpdateRequest, picture);
-
         picture.setTags(JSONUtil.toJsonStr(pictureUpdateRequest.getTags()));
-
         pictureService.validPicture(picture);
-
         long id = pictureUpdateRequest.getId();
         Picture oldPicture = pictureService.getById(id);
         ThrowUtils.throwIf(oldPicture == null, ErrorCode.NOT_FOUND_ERROR);
@@ -193,10 +189,8 @@ public class PictureController {
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public BaseResponse<Picture> getPictureById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
-
         Picture picture = pictureService.getById(id);
         ThrowUtils.throwIf(picture == null, ErrorCode.NOT_FOUND_ERROR);
-
         return ResultUtils.success(picture);
     }
 
@@ -215,7 +209,7 @@ public class PictureController {
         Long spaceId = picture.getSpaceId();
         User loginUser = userService.getLoginUser(request);
         Space space = null;
-        if(spaceId != null) {
+        if(spaceId != 0) {
 //            pictureService.checkPictureAuth(loginUser, picture);
             boolean b = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
             ThrowUtils.throwIf(!b, ErrorCode.NO_AUTH_ERROR,"无权查看");
@@ -248,7 +242,6 @@ public class PictureController {
     public BaseResponse<Page<Picture>> listPictureByPage(@RequestBody PictureQueryRequest pictureQueryRequest) {
         long current = pictureQueryRequest.getPage();
         long size = pictureQueryRequest.getPageSize();
-
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
                 PictureQueryRequest.getQueryWrapper(pictureQueryRequest));
         return ResultUtils.success(picturePage);
