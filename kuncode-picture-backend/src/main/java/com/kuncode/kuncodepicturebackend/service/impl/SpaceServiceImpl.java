@@ -9,6 +9,7 @@ import com.kuncode.kuncodepicturebackend.exception.ErrorCode;
 import com.kuncode.kuncodepicturebackend.exception.ThrowUtils;
 import com.kuncode.kuncodepicturebackend.manager.sharding.DynamicShardingManager;
 import com.kuncode.kuncodepicturebackend.mapper.SpaceMapper;
+import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddByAdminRequest;
 import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddRequest;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.SpaceUser;
@@ -191,6 +192,67 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper,Space> implements 
             if(SpaceLevelEnum.FLAGSHIP.getValue() == space.getSpaceLevel()){
                 // 旗舰版空间创建单数的表存放图片
                 dynamicShardingManager.createSpacePictureTable(space);
+            }
+            transactionManager.commit(status);
+        }catch (Exception e){
+            log.error("空间创建错误",e);
+            transactionManager.commit(status);
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,e.getMessage());
+        }finally {
+            lock.unlock();
+        }
+        return newSpaceId;
+    }
+
+
+    @Override
+    public Long addSpaceByAdmin(SpaceAddByAdminRequest spaceAddByAdminRequest) throws InterruptedException {
+        Space space = new Space();
+        BeanUtils.copyProperties(spaceAddByAdminRequest, space);
+        if (StrUtil.isBlank(spaceAddByAdminRequest.getSpaceName())) {
+            space.setSpaceName("默认空间");
+        }
+        if (space.getSpaceLevel() == null) {
+            space.setSpaceLevel(SpaceLevelEnum.COMMON.getValue());
+        }
+        if (space.getSpaceType() == null) {
+            space.setSpaceType(SpaceTypeEnum.PRIVATE.getValue());
+        }
+        this.fillSpaceBySpaceLevel(space);
+        this.validSpace(space, true);
+        Long userId = spaceAddByAdminRequest.getUserId();
+        space.setUserId(userId);
+        User user = userService.getById(userId);
+        if (userId == null || user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户不存在");
+        }
+        RLock lock = redissonClient.getLock(String.format(SPACE_LEVEL_COMMON_ONLY_LOCK_KEY,userId.toString()));
+        boolean b = lock.tryLock(0, 5, TimeUnit.SECONDS);
+        if (!b) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR,"点击频繁");
+        }
+        Long newSpaceId;
+        TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+        try{
+            boolean exists = this.lambdaQuery()
+                    .eq(Space::getUserId, userId)
+                    .eq(Space::getSpaceType, space.getSpaceType())
+                    .exists();
+            ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR, "每个用户仅能有一个特定空间");
+            boolean result = this.save(space);
+            ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR, "创建空间失败");
+            newSpaceId = space.getId();
+            if(SpaceTypeEnum.TEAM.getValue() == space.getSpaceType()){
+                SpaceUser spaceUser = new SpaceUser();
+                spaceUser.setSpaceId(space.getId());
+                spaceUser.setUserId(userId);
+                spaceUser.setSpaceRole(SpaceRoleEnum.ADMIN.getValue());
+                boolean save = spaceUserService.save(spaceUser);
+                ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR, "创建团队成员记录失败");
+                if(SpaceLevelEnum.FLAGSHIP.getValue() == space.getSpaceLevel()){
+                    // 旗舰版空间创建单数的表存放图片
+                    dynamicShardingManager.createSpacePictureTable(space);
+                }
             }
             transactionManager.commit(status);
         }catch (Exception e){

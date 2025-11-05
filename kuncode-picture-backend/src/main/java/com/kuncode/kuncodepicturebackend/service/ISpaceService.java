@@ -2,6 +2,7 @@ package com.kuncode.kuncodepicturebackend.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddByAdminRequest;
 import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddRequest;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
@@ -50,4 +51,5 @@ public interface ISpaceService extends IService<Space> {
 
     void checkSpaceAuth(Space space, User loginUser);
 
+    Long addSpaceByAdmin(SpaceAddByAdminRequest spaceAddByAdminRequest) throws InterruptedException;
 }

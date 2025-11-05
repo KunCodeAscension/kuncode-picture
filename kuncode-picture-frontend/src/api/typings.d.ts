@@ -509,6 +509,13 @@ declare namespace API {
     userId?: number
   }
 
+  type SpaceAddByAdminRequest = {
+    spaceLevel?: number
+    spaceName?: string
+    spaceType?: number
+    userId?: number
+  }
+
   type SpaceAddRequest = {
     spaceLevel?: number
     spaceName?: string

@@ -10,14 +10,12 @@ import com.kuncode.kuncodepicturebackend.exception.BusinessException;
 import com.kuncode.kuncodepicturebackend.exception.ErrorCode;
 import com.kuncode.kuncodepicturebackend.exception.ThrowUtils;
 import com.kuncode.kuncodepicturebackend.manager.auth.SpaceUserAuthManager;
-import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceAddRequest;
-import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceEditRequest;
-import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceQueryRequest;
-import com.kuncode.kuncodepicturebackend.model.dto.space.SpaceUpdateRequest;
+import com.kuncode.kuncodepicturebackend.model.dto.space.*;
 import com.kuncode.kuncodepicturebackend.model.entity.Space;
 import com.kuncode.kuncodepicturebackend.model.entity.User;
 import com.kuncode.kuncodepicturebackend.model.enums.SpaceLevelEnum;
 import com.kuncode.kuncodepicturebackend.model.enums.SpaceTypeEnum;
+import com.kuncode.kuncodepicturebackend.model.enums.UserRoleEnum;
 import com.kuncode.kuncodepicturebackend.model.vo.space.SpaceLevel;
 import com.kuncode.kuncodepicturebackend.model.vo.space.SpaceVO;
 import com.kuncode.kuncodepicturebackend.service.ISpaceService;
@@ -57,6 +55,14 @@ public class SpaceController {
         ThrowUtils.throwIf(spaceAddRequest == null,ErrorCode.PARAMS_ERROR);
         User loginUser = userService.getLoginUser(request);
         Long res = spaceService.addSpace(spaceAddRequest, loginUser);
+        return ResultUtils.success(res);
+    }
+
+    @PostMapping("/add/admin")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Long> addSpaceByAdmin(@RequestBody SpaceAddByAdminRequest spaceAddByAdminRequest, HttpServletRequest request) throws InterruptedException {
+        ThrowUtils.throwIf(spaceAddByAdminRequest == null,ErrorCode.PARAMS_ERROR);
+        Long res = spaceService.addSpaceByAdmin(spaceAddByAdminRequest);
         return ResultUtils.success(res);
     }
 
@@ -103,8 +109,10 @@ public class SpaceController {
         long id = spaceUpdateRequest.getId();
         Space oldSpace = spaceService.getById(id);
         ThrowUtils.throwIf(oldSpace == null, ErrorCode.NOT_FOUND_ERROR);
-        if(oldSpace.getSpaceType() == SpaceTypeEnum.TEAM.getValue() && !oldSpace.getSpaceLevel().equals(spaceUpdateRequest.getSpaceLevel())) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR,"团队空间不支持修改空间级别");
+        if(oldSpace.getSpaceType() == SpaceTypeEnum.TEAM.getValue()) {
+            if(!oldSpace.getSpaceLevel().equals(spaceUpdateRequest.getSpaceLevel()) && spaceUpdateRequest.getSpaceLevel().equals(SpaceLevelEnum.FLAGSHIP.getValue())) {
+                throw new BusinessException(ErrorCode.PARAMS_ERROR,"团队空间不支持升级为旗舰版");
+            }
         }
         boolean result = spaceService.updateById(space);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);

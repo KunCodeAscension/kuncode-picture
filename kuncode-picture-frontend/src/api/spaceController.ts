@@ -17,6 +17,21 @@ export async function addSpaceUsingPost(
   })
 }
 
+/** addSpaceByAdmin POST /api/space/add/admin */
+export async function addSpaceByAdminUsingPost(
+  body: API.SpaceAddByAdminRequest,
+  options?: { [key: string]: any }
+) {
+  return request<API.BaseResponseLong_>('/api/space/add/admin', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}
+
 /** deleteSpace POST /api/space/delete */
 export async function deleteSpaceUsingPost(
   body: API.DeleteRequest,
