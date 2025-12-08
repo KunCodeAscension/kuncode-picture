@@ -263,7 +263,8 @@ public class PictureController {
         // 空间权限
         Long spaceId = pictureQueryRequest.getSpaceId();
         if(spaceId == null) {
-            pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+            // 公共图库
+            pictureQueryRequest.setReviewStatus(pictureQueryRequest.getReviewStatus() == null ? PictureReviewStatusEnum.PASS.getValue() : pictureQueryRequest.getReviewStatus());
             pictureQueryRequest.setNullSpaceId(true);
         }else {
             boolean b = StpKit.SPACE.hasPermission(SpaceUserPermissionConstant.PICTURE_VIEW);
@@ -480,4 +481,6 @@ public class PictureController {
         GetOutPaintingTaskResponse task = aliYunAiApi.getOutPaintingTask(taskId);
         return ResultUtils.success(task);
     }
+
+
 }

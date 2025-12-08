@@ -28,40 +28,40 @@
       </a-space>
     </div>
     <PictureList :dataList="dataList" :loading="loading" :showOp="false" :onReload="fetchData" />
+    <!-- 分页 -->
+    <a-pagination
+      style="text-align: right"
+      v-model:current="searchParams.page"
+      v-model:pageSize="searchParams.pageSize"
+      :total="total"
+      @change="onPageChange"
+    />
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import {onMounted, reactive, ref } from 'vue'
 import {
   listPictureTagCategoryUsingGet,
   listPictureVoByPageUsingPost,
 } from '@/api/pictureController.ts'
 import { message } from 'ant-design-vue'
-import { useRouter } from 'vue-router'
 import PictureList from '@/components/PicyureList.vue'
 
 const dataList = ref<API.PictureVO[]>()
 const total = ref(0)
 const loading = ref(true)
+const onPageChange = (page: number, pageSize: number) => {
+  searchParams.page = page
+  searchParams.pageSize = pageSize
+  fetchData()
+}
 
 const searchParams = reactive<API.PictureQueryRequest>({
   page: 1,
   pageSize: 12,
   sortField: 'createTime',
   sortOrder: 'descend',
-})
-
-const pagination = computed(() => {
-  return {
-    page: searchParams.page ?? 1,
-    pageSize: searchParams.pageSize ?? 10,
-    total: total.value,
-    onChange: (page: number, pageSize: number) => {
-      searchParams.page = page
-      searchParams.pageSize = pageSize
-      fetchData()
-    },
-  }
+  reviewStatus: 1
 })
 
 const fetchData = async () => {
@@ -111,14 +111,6 @@ const getTagCategoryOptions = async () => {
   } else {
     message.error('加载分类标签失败，' + res.data.message)
   }
-}
-
-const router = useRouter()
-
-const doClickPicture = (picture : API.PictureVO) => {
-  router.push({
-    path: `/picture/${picture.id}`,
-  })
 }
 </script>
 

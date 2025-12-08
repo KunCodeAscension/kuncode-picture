@@ -4,6 +4,11 @@
     <a-flex justify="space-between">
       <h2>{{ space.spaceName }}（{{ SPACE_TYPE_MAP[space.spaceType] }}）</h2>
       <a-space size="middle">
+        <a-radio-group v-model:value="reviewStatus" button-style="solid">
+          <a-radio-button :value="1">已通过</a-radio-button>
+          <a-radio-button :value="0">审核中</a-radio-button>
+          <a-radio-button :value="2">未通过</a-radio-button>
+        </a-radio-group>
         <a-button
           v-if="canUploadPicture"
           type="primary"
@@ -77,7 +82,6 @@ import {
 } from '@/api/pictureController.ts'
 import { formatSize } from '@/utils'
 import PictureSearchForm from '@/components/PictureSearchForm.vue'
-import { ColorPicker } from 'vue3-colorpicker'
 import 'vue3-colorpicker/style.css'
 import PictureList from '@/components/PicyureList.vue'
 import { BarChartOutlined, TeamOutlined } from '@ant-design/icons-vue'
@@ -86,6 +90,8 @@ import { SPACE_PERMISSION_ENUM, SPACE_TYPE_MAP } from '@/constants/space.ts'
 interface Props {
   id: string | number
 }
+
+const reviewStatus = ref<number>(1)
 
 const props = defineProps<Props>()
 const space = ref<API.SpaceVO>({})
@@ -136,7 +142,22 @@ const searchParams = ref<API.PictureQueryRequest>({
   pageSize: 12,
   sortField: 'createTime',
   sortOrder: 'descend',
+  reviewStatus : reviewStatus.value,
 })
+
+watch(reviewStatus, () => {
+  onSearch_new() // 不需要传参，直接触发
+})
+
+// 搜索
+const onSearch_new = () => {
+  searchParams.value = {
+    ...searchParams.value,
+    reviewStatus: reviewStatus.value,
+    page: 1
+  }
+  fetchData()
+}
 
 // 获取数据
 const fetchData = async () => {

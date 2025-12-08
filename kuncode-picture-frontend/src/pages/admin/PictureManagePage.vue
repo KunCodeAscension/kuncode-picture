@@ -87,7 +87,7 @@
             <a-button
               v-if="record.reviewStatus !== PIC_REVIEW_STATUS_ENUM.PASS"
               type="primary"
-              @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.PASS)"
+              @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.PASS,'管理员操作通过')"
             >
               通过
             </a-button>
@@ -95,7 +95,7 @@
               v-if="record.reviewStatus !== PIC_REVIEW_STATUS_ENUM.REJECT"
               type="primary"
               danger
-              @click="handleReview(record, PIC_REVIEW_STATUS_ENUM.REJECT)"
+              @click="showRejectModal(record)"
             >
               拒绝
             </a-button>
@@ -107,6 +107,16 @@
         </template>
       </template>
     </a-table>
+
+    <a-modal v-model:open="RejectModel" title="拒绝通过消息" centered okText="确定" cancelText="取消" @ok="handleRejectConfirm" @cancel="handleRejectCancel"
+    >
+      <a-input
+        v-model:value="RejectMessage"
+      placeholder="请输入拒绝信息"
+      :maxlength="50"
+      show-count
+      />
+    </a-modal>
   </div>
 </template>
 <script lang="ts" setup>
@@ -197,6 +207,47 @@ const searchParams = reactive<API.PictureQueryRequest>({
   nullSpaceId: true,
 })
 
+const RejectModel = ref<boolean>(false);
+const RejectMessage = ref<string>("")
+const currentRecord = ref(null);    // 当前点击“拒绝”的行数据
+
+const showRejectModal = (record) => {
+  currentRecord.value = record; // 存储当前行数据
+  RejectMessage.value = '';     // 重置拒绝原因
+  RejectModel.value = true; // 打开模态框
+};
+
+// 确认拒绝：执行审核拒绝逻辑
+const handleRejectConfirm = () => {
+  if (!currentRecord.value) {
+    // 异常防护：没有选中行时直接关闭
+    RejectModel.value = false;
+    return;
+  }
+  if (!RejectMessage.value.trim()) {
+    // 校验：拒绝原因不能为空
+    message.error("请输入拒绝原因")
+    return;
+  }
+  // 执行拒绝审核逻辑（复用原有handleReview方法）
+  handleReview(
+    currentRecord.value,
+    PIC_REVIEW_STATUS_ENUM.REJECT,
+    RejectMessage.value.trim()
+  );
+  // 关闭模态框并重置状态
+  RejectModel.value = false;
+  currentRecord.value = null;
+  RejectMessage.value = '';
+};
+
+// 取消拒绝：关闭模态框并重置状态
+const handleRejectCancel = () => {
+  RejectModel.value = false;
+  currentRecord.value = null;
+  RejectMessage.value = '';
+};
+
 // 分页配置
 const pagination = computed(() => {
   return {
@@ -220,9 +271,7 @@ const fetchData = async () => {
   }
 }
 
-const handleReview = async (record: API.Picture, reviewStatus: number) => {
-  const reviewMessage =
-    reviewStatus === PIC_REVIEW_STATUS_ENUM.PASS ? '管理员操作通过' : '管理员操作拒绝'
+const handleReview = async (record: API.Picture, reviewStatus: number, reviewMessage: string) => {
   const res = await doPictureReviewUsingPost({
     id: record.id,
     reviewStatus,
@@ -230,8 +279,9 @@ const handleReview = async (record: API.Picture, reviewStatus: number) => {
   })
   if (res.data.code === 0) {
     message.success('审核操作成功')
-
     fetchData()
+    RejectMessage.value = '';
+    RejectModel.value = false
   } else {
     message.error('审核操作失败，' + res.data.message)
   }

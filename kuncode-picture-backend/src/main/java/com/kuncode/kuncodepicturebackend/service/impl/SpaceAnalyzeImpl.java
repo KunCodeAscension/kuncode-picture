@@ -227,7 +227,7 @@ public class SpaceAnalyzeImpl extends ServiceImpl<SpaceMapper, Space> implements
             return;
         }
         if (spaceAnalyzeRequest.isQueryPublic()) {
-            queryWrapper.isNull("spaceId");
+            queryWrapper.eq("spaceId",0L);
             return;
         }
         Long spaceId = spaceAnalyzeRequest.getSpaceId();

@@ -4,7 +4,7 @@
       <a-col flex="200px">
         <router-link to="/">
           <div class="title-bar">
-            <img class="logo" src="../assets/logo.svg" alt="logo" />
+<!--            <img class="logo" src="/public/favicon.jpg" alt="logo" />-->
             <div class="title">坤码云图库</div>
           </div>
         </router-link>

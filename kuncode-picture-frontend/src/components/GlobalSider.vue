@@ -17,7 +17,7 @@
 </template>
 <script lang="ts" setup>
 import { computed, h, ref, watchEffect } from 'vue'
-import { PictureOutlined, TeamOutlined, UserOutlined } from '@ant-design/icons-vue'
+import { PictureOutlined, TeamOutlined, UserOutlined, FileImageOutlined} from '@ant-design/icons-vue'
 import { useRouter } from 'vue-router'
 import { useLoginUserStore } from '@/stores/useLoginUserStore.ts'
 import { SPACE_TYPE_ENUM } from '@/constants/space.ts'
@@ -26,12 +26,17 @@ import { message } from 'ant-design-vue'
 
 const loginUserStore = useLoginUserStore()
 
-// 固定的菜单列表
+// 固定的菜单列表 <a-icon type="file-image" />
 const fixedMenuItems = [
   {
     key: '/',
     icon: () => h(PictureOutlined),
     label: '公共图库',
+  },
+  {
+    key: '/my_picture',
+    label: '我的图片',
+    icon: () => h(FileImageOutlined),
   },
   {
     key: '/my_space',

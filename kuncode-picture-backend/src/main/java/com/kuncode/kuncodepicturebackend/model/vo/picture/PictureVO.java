@@ -3,6 +3,7 @@ package com.kuncode.kuncodepicturebackend.model.vo.picture;
 import cn.hutool.json.JSONUtil;
 import com.kuncode.kuncodepicturebackend.model.entity.Picture;
 import com.kuncode.kuncodepicturebackend.model.vo.user.UserVO;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
@@ -65,6 +66,12 @@ public class PictureVO implements Serializable {
 
 
     private Date updateTime;
+
+
+    private Integer reviewStatus;
+
+
+    private String reviewMessage;
 
 
     private Long spaceId;

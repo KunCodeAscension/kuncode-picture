@@ -59,6 +59,9 @@
                 />
               </a-space>
             </a-descriptions-item>
+            <a-descriptions-item v-if="picture.reviewStatus == 2" label="管理员拒绝信息">
+              <a-tag color="red" >{{ picture.reviewMessage ?? '-' }}</a-tag>
+            </a-descriptions-item>
           </a-descriptions>
           <!-- 图片操作 -->
           <a-space wrap>

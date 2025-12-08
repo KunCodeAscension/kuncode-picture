@@ -15,6 +15,7 @@ import SearchPicturePage from '@/pages/picture/SearchPicturePage.vue'
 import SpaceAnalyzePage from '@/pages/space/SpaceAnalyzePage.vue'
 import SpaceUserManagePage from '@/pages/admin/SpaceUserManagePage.vue'
 import AddSpaceByAdminPage from '@/pages/admin/AddSpaceByAdminPage.vue'
+import MyPublicPicturePage from '@/pages/picture/MyPublicPicturePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -43,6 +44,11 @@ const router = createRouter({
       path: '/add_picture',
       name: '创建图片',
       component: AddPicturePage,
+    },
+    {
+      path: '/my_picture',
+      name: '我的图片',
+      component: MyPublicPicturePage,
     },
     {
       path: '/admin/pictureManage',
